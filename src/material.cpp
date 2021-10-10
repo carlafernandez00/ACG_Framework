@@ -214,7 +214,7 @@ void SkyboxMaterial::renderInMenu()
 ReflectiveMaterial::ReflectiveMaterial()
 {
 	color = vec4(1.f, 1.f, 1.f, 1.f);
-	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/reflective.fs");
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/reflective.fs"); 
 }
 
 ReflectiveMaterial::~ReflectiveMaterial()

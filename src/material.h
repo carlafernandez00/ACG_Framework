@@ -30,11 +30,13 @@ public:
 	void renderInMenu();
 };
 
+// Definim una subclasse pel Phong 
 class PhongMaterial : public Material {
 public: 
-
+	
 	Texture* normal_texture = NULL;
-	bool use_normal = false;
+	bool use_normal = false;	// Controlem si utilitzem una textura amb les normals 
+	// Definim les variables de la llum
 	Vector3 k_ambient;
 	Vector3 k_difuse;
 	Vector3 k_specular;
@@ -58,6 +60,7 @@ public:
 	void render(Mesh* mesh, Matrix44 model, Camera * camera);
 };
 
+// Definim una subclasse pel material de la Skybox
 class SkyboxMaterial : public Material {
 public:
 
@@ -69,6 +72,7 @@ public:
 	void renderInMenu();
 };
 
+// Definim una subclasse pel material reflectant
 class ReflectiveMaterial : public Material {
 public:
 

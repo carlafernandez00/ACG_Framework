@@ -60,21 +60,23 @@ void SceneNode::renderInMenu()
 	//Geometry
 	if (mesh && ImGui::TreeNode("Geometry"))
 	{
+		// Permet canviar la mesh 
 		bool changed = false;
 		changed |= ImGui::Combo("Mesh", (int*)&mesh_selected, "SPHERE\0HELMET\0BENCH\0");
+		// Assignem una malla i textura diferent segons la opci? escollida
 		if (changed) {
 			switch (mesh_selected){
 			case 0: mesh = Mesh::Get("data/meshes/sphere.obj.mbin"); 
 				material->texture = Texture::Get("data/models/ball/albedo.png");
-				model.modifyScale(1.0, 1.0, 1.0);
+				model.modifyScale(1.0, 1.0, 1.0); //Reescalem la malla perqu? tingui el tamany desitjat
 				break;
 			case 1: mesh = Mesh::Get("data/models/helmet/helmet.obj.mbin"); 
 				material->texture = Texture::Get("data/models/helmet/albedo.png"); 
-				model.modifyScale(1.0, 1.0, 1.0);
+				model.modifyScale(1.0, 1.0, 1.0); //Reescalem la malla perqu? tingui el tamany desitjat
 				break;
 			case 2: mesh = Mesh::Get("data/models/bench/bench.obj.mbin"); 
 				material->texture = Texture::Get("data/models/bench/albedo.png"); 
-				model.modifyScale(1.8, 1.8, 1.8);
+				model.modifyScale(1.8, 1.8, 1.8); //Reescalem la malla perqu? tingui el tamany desitjat
 				break;
 			}
 		}
@@ -90,9 +92,15 @@ Light::Light(std::string name)
 
 void Light::renderInMenu()
 {
-	ImGui::DragFloat3("Position", position.v, 0.1f);  //Slider per moure la posició de la llum
-	ImGui::ColorEdit3("Difuse Color", difuse.v);      //Canviem la llum difusa
-	ImGui::ColorEdit3("Specular Color", specular.v);  //Canviem la llum especular
+	ImGui::DragFloat3("Position", position.v, 0.1f);  //Slider per moure la posicio de la llum
+	ImGui::ColorEdit3("Difuse Color", difuse.v);      //Permet modificar la llum difusa
+	ImGui::ColorEdit3("Specular Color", specular.v);  //Permet modificar la llum especular
+	// creem sliders per modificar les constants del material
+	ImGui::DragFloat3("Ka", k_ambient, 0.1f);  
+	ImGui::DragFloat3("Kd", k_difuse, 0.1f);  
+	ImGui::DragFloat3("Ks", k_specular, 0.1f);
+	ImGui::SliderFloat("Alpha", k_alpha, 0.0f, 1.0f) //definim un rang
+	
 }
 
 void Light::setUniforms(Shader* shader)
@@ -120,8 +128,10 @@ SkyboxNode::~SkyboxNode()
 
 void SkyboxNode::renderInMenu()
 {
+	// Definim tres opcions de fons
 	bool changed = false;
 	changed |= ImGui::Combo("Skybox", (int*)&skybox_selected, "CITY\0SNOW\0DRAGONVALE\0");
+	// Assignem una textura diferent al skybox segons la opci? escollida
 	if (changed) {
 		switch (skybox_selected) {
 		case 0: material->texture->cubemapFromImages("data/environments/city"); break;

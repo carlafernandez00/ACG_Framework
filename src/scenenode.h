@@ -8,12 +8,13 @@
 #include "camera.h"
 #include "material.h"
 
+// Definim una classe pel node Light
 class Light {
 public:
 
 	Light(std::string name);
 	~Light();
-	
+
 	Vector3 difuse;
 	Vector3 specular;
 	Vector3 position;
@@ -44,6 +45,7 @@ public:
 	virtual void renderInMenu();
 };
 
+// Definim una subclasse pel node Skybox
 class SkyboxNode : public SceneNode{
 public:
 
