@@ -149,7 +149,6 @@ void Application::render(void)
 	//render skybox
 	glDisable(GL_DEPTH_TEST);
 	//Actualitzem el centre de la box segons la posició de la càmera
-	skybox->model.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);  
 	skybox->material->render(skybox->mesh, skybox->model, camera);
 	//set flags
 	glEnable(GL_DEPTH_TEST);
@@ -197,6 +196,9 @@ void Application::update(double seconds_elapsed)
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
 		Input::centerMouse();
+
+	//actualitzem el centre del skybox
+	skybox->model.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
 }
 
 //Keyboard event handler (sync input)
