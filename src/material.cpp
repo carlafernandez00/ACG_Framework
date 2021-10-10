@@ -163,6 +163,11 @@ void PhongMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 
 void PhongMaterial::renderInMenu()
 {
+	// creem sliders per modificar les constants del material
+	ImGui::DragFloat3("Ka", k_ambient, 0.1f);  
+	ImGui::DragFloat3("Kd", k_difuse, 0.1f);  
+	ImGui::DragFloat3("Ks", k_specular, 0.1f);
+	ImGui::SliderFloat("Alpha", k_alpha, 0.0f, 1.0f); //definim un rang
 }
 
 SkyboxMaterial::SkyboxMaterial()

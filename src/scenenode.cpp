@@ -95,11 +95,6 @@ void Light::renderInMenu()
 	ImGui::DragFloat3("Position", position.v, 0.1f);  //Slider per moure la posicio de la llum
 	ImGui::ColorEdit3("Difuse Color", difuse.v);      //Permet modificar la llum difusa
 	ImGui::ColorEdit3("Specular Color", specular.v);  //Permet modificar la llum especular
-	// creem sliders per modificar les constants del material
-	ImGui::DragFloat3("Ka", k_ambient, 0.1f);  
-	ImGui::DragFloat3("Kd", k_difuse, 0.1f);  
-	ImGui::DragFloat3("Ks", k_specular, 0.1f);
-	ImGui::SliderFloat("Alpha", k_alpha, 0.0f, 1.0f) //definim un rang
 	
 }
 
