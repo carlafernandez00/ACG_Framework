@@ -60,7 +60,6 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		Texture* skybox_texture = new Texture();                                     
 		skybox_texture->cubemapFromImages("data/environments/city");
 		mat_skybox->texture = skybox_texture;								                 // li assignem la textura city (predeterminada)
-		mat_skybox->shader = Shader::Get("data/shaders/basic.vs", "data/shaders/skybox.fs"); // li assignem els shaders
 
 		skybox->material = mat_skybox;		
 		node_list.push_back(skybox);
@@ -90,13 +89,12 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		//mat->normal_texture = normal;
 
 		// Inicialitzem les variables del material
-		mat->k_alpha = 5.0;
+		mat->k_alpha = 0.5;
 		mat->k_ambient = Vector3(1.0, 1.0, 1.0);
 		mat->k_difuse = Vector3(1.0, 1.0, 1.0);
 		mat->k_specular = Vector3(1.0, 1.0, 1.0);
 		
 		node->material = mat;
-		mat->shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phong.fs"); //Li assignem els shaders
 		node_list.push_back(node);
 
 		// Inicialitzem les llums 

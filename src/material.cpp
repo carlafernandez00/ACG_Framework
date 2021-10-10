@@ -50,7 +50,7 @@ void StandardMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 
 void StandardMaterial::renderInMenu()
 {
-	ImGui::ColorEdit3("Color", (float*)&color); // Edit 3 floats representing a color
+	//ImGui::ColorEdit3("Color", (float*)&color); // Edit 3 floats representing a color
 
 }
 
@@ -164,10 +164,10 @@ void PhongMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 void PhongMaterial::renderInMenu()
 {
 	// creem sliders per modificar les constants del material
-	ImGui::DragFloat3("Ka", k_ambient, 0.1f);  
-	ImGui::DragFloat3("Kd", k_difuse, 0.1f);  
-	ImGui::DragFloat3("Ks", k_specular, 0.1f);
-	ImGui::SliderFloat("Alpha", k_alpha, 0.0f, 1.0f); //definim un rang
+	ImGui::DragFloat3("Ka", k_ambient.v, 0.1f, 0.0, 1.0);  //definim un rang
+	ImGui::DragFloat3("Kd", k_difuse.v, 0.1f, 0.0, 1.0);   //definim un rang
+	ImGui::DragFloat3("Ks", k_specular.v, 0.1f, 0.0, 1.0); //definim un rang
+	ImGui::SliderFloat("Alpha", &k_alpha, 0.0f, 500.0f);   //definim un rang
 }
 
 SkyboxMaterial::SkyboxMaterial()
