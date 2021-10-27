@@ -297,7 +297,3 @@ void PBRMaterial::setUniforms(Camera* camera, Matrix44 model)
 	shader->setUniform("u_light_pos", Application::instance->light_list[0]->position);
 	shader->setUniform("u_light_intensity", Application::instance->light_list[0]->difuse);
 }
-
-void PBRMaterial::renderInMenu()
-{
-}

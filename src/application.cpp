@@ -53,7 +53,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		// Definim la skybox centrada a la càmera i la escalem
 		Matrix44 sky_model;
 		sky_model.translate(camera->eye.x, camera->eye.y, camera->eye.z);
-		sky_model.scale(10.0, 10.0, 10.0);
+		//sky_model.scale(10.0, 10.0, 10.0);
 		skybox->model = sky_model;
 
 		SkyboxMaterial* mat_skybox = new SkyboxMaterial();									 // Definim el material de la skybox
@@ -65,13 +65,13 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		node_list.push_back(skybox);
 		
 		///// SCENE ELEMENTS
-		/// STANDARD MATERIAL : Banquito
+		/// TEXTURE MATERIAL : Banquito
 		SceneNode* standard_node = new SceneNode("Standard Material");          // Definim el scene node
 		standard_node->mesh = Mesh::Get("data/models/bench/bench.obj.mbin");    // Li assignem una malla (banc->predeterminat)
 		standard_node->model.setTranslation(-2.5, -0.7, -0.6);					// El situem on ens interessa i l'escalem
 		standard_node->model.scale(1.8, 1.8, 1.8);
 
-		StandardMaterial* standard_mat = new StandardMaterial();				// Definim en stardardmaterial
+		TextureMaterial* standard_mat = new TextureMaterial();				// Definim en stardardmaterial
 		standard_mat->texture = Texture::Get("data/models/bench/albedo.png");   // Li assignem la textura corresponent
 		
 		standard_node->material = standard_mat;   // Li assignem el material al node
@@ -102,7 +102,8 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		Light* light_1 = new Light("first light");
 		light_1->specular = Vector3(1.0, 1.0, 1.0);
 		light_1->difuse = Vector3(1.0, 1.0, 1.0);
-		light_1->position = Vector3(-50.0 , 50.0, 50.0);
+		//light_1->position = Vector3(-50.0, 50.0, 50.0);
+		light_1->position = Vector3(0.0 , 0.0, 10.0);
 		light_list.push_back(light_1);
 
 		// LIGHT 2
@@ -127,18 +128,14 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		/// PBR MATERIAL:
 		SceneNode* pbr_node = new SceneNode("PBR Material");  // Definim el scene node 
 		pbr_node->mesh = Mesh::Get("data/models/lantern/lantern.obj.mbin");   // li assignem la malla (lantern->predeterminada)
-		pbr_node->model.setTranslation(5, 0.0, 0.0);
-		//ref_node->model.scale(5, 5, 5);
+		pbr_node->model.setTranslation(0.0, 0.0, 2.0);
+		pbr_node->model.scale(0.01, 0.01, 0.01);
 
 		PBRMaterial* pbr_mat = new PBRMaterial();      // El definim amb el material reflective
-		Texture* albedo = Texture::Get("data/models/lantern/albedo.png");
-		pbr_mat->albedo = albedo;							 // Li assignem la textura albedo
-		Texture* normal = Texture::Get("data/models/lantern/normal.png");
-		pbr_mat->normal = normal;							 // Li assignem la textura normal
-		Texture* roughness = Texture::Get("data/models/lantern/roughness.png");
-		pbr_mat->roughness = roughness;							 // Li assignem la textura roughness
-		Texture* metalness = Texture::Get("data/models/lantern/metalness.png");
-		pbr_mat->metalness = metalness;							 // Li assignem la textura albedo
+		pbr_mat->albedo = Texture::Get("data/models/lantern/albedo.png");							 // Li assignem la textura albedo
+		pbr_mat->normal = Texture::Get("data/models/lantern/normal.png");							 // Li assignem la textura normal
+		pbr_mat->roughness = Texture::Get("data/models/lantern/roughness.png");						 // Li assignem la textura roughness
+		pbr_mat->metalness = Texture::Get("data/models/lantern/metalness.png");						 // Li assignem la textura metalness
 
 		pbr_node->material = pbr_mat;
 		node_list.push_back(pbr_node);

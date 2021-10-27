@@ -35,10 +35,6 @@ public:
 
 	TextureMaterial();
 	~TextureMaterial();
-
-	void setUniforms(Camera* camera, Matrix44 model);
-	void render(Mesh* mesh, Matrix44 model, Camera* camera);
-	void renderInMenu();
 };
 
 // Definim una subclasse pel Phong 
@@ -108,8 +104,6 @@ public:
 	Texture* metalness;
 
 	void setUniforms(Camera* camera, Matrix44 model);
-	void render(Mesh* mesh, Matrix44 model, Camera* camera);
-	void renderInMenu();
 };
 
 #endif
