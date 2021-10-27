@@ -6,7 +6,7 @@
 StandardMaterial::StandardMaterial()
 {
 	color = vec4(1.f, 1.f, 1.f, 1.f);
-	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/normal.fs");
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/flat.fs");
 }
 
 StandardMaterial::~StandardMaterial()
@@ -82,6 +82,15 @@ void WireframeMaterial::render(Mesh* mesh, Matrix44 model, Camera * camera)
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+}
+
+TextureMaterial::TextureMaterial()
+{
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+}
+
+TextureMaterial::~TextureMaterial()
+{
 }
 
 PhongMaterial::PhongMaterial()
@@ -257,5 +266,38 @@ void ReflectiveMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 }
 
 void ReflectiveMaterial::renderInMenu()
+{
+}
+
+PBRMaterial::PBRMaterial()
+{
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/pbr.fs");
+}
+
+PBRMaterial::~PBRMaterial()
+{
+}
+
+void PBRMaterial::setUniforms(Camera* camera, Matrix44 model)
+{
+	//upload node uniforms
+	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	shader->setUniform("u_camera_position", camera->eye);
+	shader->setUniform("u_model", model);
+	shader->setUniform("u_time", Application::instance->time);
+	shader->setUniform("u_output", Application::instance->output);
+
+	shader->setUniform("u_exposure", Application::instance->scene_exposure);
+	// material
+	if (albedo) shader->setUniform("u_texture", albedo);
+	if (normal) shader->setUniform("u_normal_texture", normal);
+	if (roughness) shader->setUniform("u_rough_texture", roughness);
+	if (metalness) shader->setUniform("u_metal_texture", metalness);
+
+	shader->setUniform("u_light_pos", Application::instance->light_list[0]->position);
+	shader->setUniform("u_light_intensity", Application::instance->light_list[0]->difuse);
+}
+
+void PBRMaterial::renderInMenu()
 {
 }

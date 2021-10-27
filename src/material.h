@@ -30,6 +30,17 @@ public:
 	void renderInMenu();
 };
 
+class TextureMaterial : public StandardMaterial {
+public:
+
+	TextureMaterial();
+	~TextureMaterial();
+
+	void setUniforms(Camera* camera, Matrix44 model);
+	void render(Mesh* mesh, Matrix44 model, Camera* camera);
+	void renderInMenu();
+};
+
 // Definim una subclasse pel Phong 
 class PhongMaterial : public Material {
 public: 
@@ -78,6 +89,23 @@ public:
 
 	ReflectiveMaterial();
 	~ReflectiveMaterial();
+
+	void setUniforms(Camera* camera, Matrix44 model);
+	void render(Mesh* mesh, Matrix44 model, Camera* camera);
+	void renderInMenu();
+};
+
+// Definim una subclasse pel material PBR
+class PBRMaterial : public StandardMaterial {
+public:
+
+	PBRMaterial();
+	~PBRMaterial();
+
+	Texture* albedo;
+	Texture* normal;
+	Texture* roughness;
+	Texture* metalness;
 
 	void setUniforms(Camera* camera, Matrix44 model);
 	void render(Mesh* mesh, Matrix44 model, Camera* camera);

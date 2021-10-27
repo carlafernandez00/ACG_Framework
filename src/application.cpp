@@ -124,10 +124,24 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		ref_node->material = ref_mat;
 		node_list.push_back(ref_node);
 
-		
+		/// PBR MATERIAL:
+		SceneNode* pbr_node = new SceneNode("PBR Material");  // Definim el scene node 
+		pbr_node->mesh = Mesh::Get("data/models/lantern/lantern.obj.mbin");   // li assignem la malla (lantern->predeterminada)
+		pbr_node->model.setTranslation(5, 0.0, 0.0);
+		//ref_node->model.scale(5, 5, 5);
 
+		PBRMaterial* pbr_mat = new PBRMaterial();      // El definim amb el material reflective
+		Texture* albedo = Texture::Get("data/models/lantern/albedo.png");
+		pbr_mat->albedo = albedo;							 // Li assignem la textura albedo
+		Texture* normal = Texture::Get("data/models/lantern/normal.png");
+		pbr_mat->normal = normal;							 // Li assignem la textura normal
+		Texture* roughness = Texture::Get("data/models/lantern/roughness.png");
+		pbr_mat->roughness = roughness;							 // Li assignem la textura roughness
+		Texture* metalness = Texture::Get("data/models/lantern/metalness.png");
+		pbr_mat->metalness = metalness;							 // Li assignem la textura albedo
 
-		
+		pbr_node->material = pbr_mat;
+		node_list.push_back(pbr_node);
 	}
 	
 	//hide the cursor
