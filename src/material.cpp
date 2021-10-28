@@ -293,10 +293,10 @@ void PBRMaterial::setUniforms(Camera* camera, Matrix44 model)
 
 	shader->setUniform("u_exposure", Application::instance->scene_exposure);
 	// material
-	if (albedo) shader->setUniform("u_texture", albedo);
-	if (normal) shader->setUniform("u_normal_texture", normal);
-	if (roughness) shader->setUniform("u_rough_texture", roughness);
-	if (metalness) shader->setUniform("u_metal_texture", metalness);
+	if (albedo) shader->setUniform("u_texture", albedo, 0);
+	if (normal) shader->setUniform("u_normal_texture", normal, 1);
+	if (roughness) shader->setUniform("u_rough_texture", roughness, 2);
+	if (metalness) shader->setUniform("u_metal_texture", metalness, 3);
 
 	shader->setUniform("u_light_pos", Application::instance->light_list[0]->position);
 	shader->setUniform("u_light_intensity", Application::instance->light_list[0]->difuse);
