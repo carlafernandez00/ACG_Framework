@@ -158,9 +158,8 @@ void Application::render(void)
 	camera->enable();
 
 	//render skybox
-	glDisable(GL_DEPTH_TEST);
-	//Actualitzem el centre de la box segons la posició de la càmera
 	skybox->material->render(skybox->mesh, skybox->model, camera);
+	
 	//set flags
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
@@ -208,7 +207,7 @@ void Application::update(double seconds_elapsed)
 	if (mouse_locked)
 		Input::centerMouse();
 
-	//actualitzem el centre del skybox
+	//Actualitzem el centre de la box segons la posició de la càmera
 	skybox->model.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
 }
 

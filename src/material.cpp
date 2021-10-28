@@ -176,7 +176,7 @@ void PhongMaterial::renderInMenu()
 	ImGui::DragFloat3("Ka", k_ambient.v, 0.1f, 0.0, 1.0);  //definim un rang
 	ImGui::DragFloat3("Kd", k_difuse.v, 0.1f, 0.0, 1.0);   //definim un rang
 	ImGui::DragFloat3("Ks", k_specular.v, 0.1f, 0.0, 1.0); //definim un rang
-	ImGui::SliderFloat("Alpha", &k_alpha, 0.0f, 500.0f);   //definim un rang
+	ImGui::SliderFloat("Alpha", &k_alpha, 0.1f, 500.0f);   //definim un rang
 }
 
 SkyboxMaterial::SkyboxMaterial()
@@ -210,9 +210,13 @@ void SkyboxMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 
 		//upload uniforms
 		setUniforms(camera, model);
-
+		
+		glDisable(GL_DEPTH_TEST);
+		
 		//do the draw call
 		mesh->render(GL_TRIANGLES);
+		
+		glEnable(GL_DEPTH_TEST);
 
 		//disable shader
 		shader->disable();

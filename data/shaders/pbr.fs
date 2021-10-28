@@ -20,6 +20,7 @@ uniform sampler2D u_texture;
 uniform sampler2D u_normal_texture;
 uniform sampler2D u_rough_texture;
 uniform sampler2D u_metal_texture;
+uniform sampler2D u_2DLUT;
 
 const float GAMMA = 2.2;
 const float INV_GAMMA = 1.0 / GAMMA;
@@ -107,12 +108,12 @@ vec3 perturbNormal( vec3 N, vec3 V, vec2 texcoord, vec3 normal_pixel ){
 	return normalize(TBN * normal_pixel);
 }
 
-/*vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}*/
+}
 
-vec3 FresnelSchlickRoughness(float NdotL, vec3 F0, float roughness)
+vec3 FresnelReflectance(float NdotL, vec3 F0, float roughness)
 {
 	return F0 + (1-F0)*pow(1-NdotL, 5.0);
 }
@@ -188,11 +189,11 @@ vec3 computeDirect(PBRMat material){
 	vec3 f_diffuse = material.albedo * RECIPROCAL_PI;
 
 	// Specular component
-	vec3 F = FresnelSchlickRoughness(material.NdotL, material.F0, material.roughness);    //F
-	float G = G1(material.NdotL, material.roughness)*G1(material.NdotV, material.roughness);		                              //G
-	float D = Distribution(material.NdotH, material.roughness); 		                  //D
+	vec3 F = FresnelReflectance(material.NdotL, material.F0, material.roughness);    //F
+	float G = G1(material.NdotL)*G1(material.NdotV, material.roughness);		     //G
+	float D = Distribution(material.NdotH, material.roughness); 		             //D
 
-	vec3 f_specular = (F * G * D) / (4.0 * material.NdotL * material.NdotV + + 1e-6);  
+	vec3 f_specular = (F * G * D) / (4.0 * material.NdotL * material.NdotV + 1e-6);  
 
 	vec3 bsdf = f_diffuse + f_specular;
 	// Direct light
@@ -200,10 +201,25 @@ vec3 computeDirect(PBRMat material){
 	return direct;
 }
 
+vec3 computeIBL(PBRMat material){
+	// IBL SPECULAR
+	vec3 specularSample = getReflectionColor(material.R, material.roughness);
+	vec3 Ks = FresnelSchlickRoughness(material.cosTheta, material.F0, material.roughness);
+	vec3 brdf2D = texture2D(u_2DLUT, v_uv);
+	vec3 specularBRDF =  Ks * brdf2D.x + brdf2D.y;
+	vec3 specularIBL = specularSample * specularBRDF;
+	// IBL DIFFUSE
+	vec3 diffuseSample = getReflectionColor(material.N, material.roughness);
+	vec3 diffuseColor = material.albedo * RECIPROCAL_PI;
+	vec3 diffuseIBL = diffuseSample * diffuseColor;
+	diffuseIBL *= (1 - Ks);
+	return diffuseIBL + specularIBL;
+}
+
 vec4 getPixelColor(PBRMat material){
 	vec3 direct = computeDirect(material);
-	//vec4 ibl = computeIBL(material);
-	return vec4(direct, 1.0);
+	vec3 ibl = computeIBL(material);
+	return vec4(direct + ibl, 1.0);
 }
 
 void main()
