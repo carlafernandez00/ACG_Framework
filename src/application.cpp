@@ -58,7 +58,10 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 		SkyboxMaterial* mat_skybox = new SkyboxMaterial();									 // Definim el material de la skybox
 		Texture* skybox_texture = new Texture();                                     
-		skybox_texture->cubemapFromImages("data/environments/city");
+		skybox_texture->cubemapFromImages("data/environments/dragonvale");
+		/*HDRE* pisa = new HDRE();
+		pisa->load("data/environments/kloppenheim_02_4k.hdre");
+		skybox_texture->cubemapFromHDRE(pisa);*/
 		mat_skybox->texture = skybox_texture;								                 // li assignem la textura city (predeterminada)
 
 		skybox->material = mat_skybox;		
@@ -89,7 +92,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		//mat->normal_texture = normal;
 
 		// Inicialitzem les variables del material
-		mat->k_alpha = 0.5;
+		mat->k_alpha = 10.0;
 		mat->k_ambient = Vector3(1.0, 1.0, 1.0);
 		mat->k_difuse = Vector3(1.0, 1.0, 1.0);
 		mat->k_specular = Vector3(1.0, 1.0, 1.0);
@@ -129,13 +132,17 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		SceneNode* pbr_node = new SceneNode("PBR Material");  // Definim el scene node 
 		pbr_node->mesh = Mesh::Get("data/models/lantern/lantern.obj.mbin");   // li assignem la malla (lantern->predeterminada)
 		pbr_node->model.setTranslation(0.0, 0.0, 2.0);
-		pbr_node->model.scale(0.01, 0.01, 0.01);
+		//pbr_node->model.scale(0.01, 0.01, 0.01);
 
 		PBRMaterial* pbr_mat = new PBRMaterial();      // El definim amb el material reflective
-		pbr_mat->albedo = Texture::Get("data/models/lantern/albedo.png");							 // Li assignem la textura albedo
-		pbr_mat->normal = Texture::Get("data/models/lantern/normal.png");							 // Li assignem la textura normal
-		pbr_mat->roughness = Texture::Get("data/models/lantern/roughness.png");						 // Li assignem la textura roughness
-		pbr_mat->metalness = Texture::Get("data/models/lantern/metalness.png");						 // Li assignem la textura metalness
+		pbr_mat->albedo = Texture::Get("data/models/lantern/albedo.png");			// Li assignem la textura albedo
+		pbr_mat->normal = Texture::Get("data/models/lantern/normal.png");			// Li assignem la textura normal
+		pbr_mat->roughness = Texture::Get("data/models/lantern/roughness.png");		// Li assignem la textura roughness
+		pbr_mat->metalness = Texture::Get("data/models/lantern/metalness.png");		// Li assignem la textura metalness
+		//pbr_mat->emissive = Texture::Get("data/models/lantern/emissive.png");		// Li assignem la textura emissive
+		pbr_mat->opacity = Texture::Get("data/models/lantern/opacity.png");			// Li assignem la textura opacity
+		pbr_mat->brdfLUT = Texture::Get("data/brdfLUT.png");						// Li assignem la textura LUT 2D
+		pbr_mat->use_metal = true;
 
 		pbr_node->material = pbr_mat;
 		node_list.push_back(pbr_node);

@@ -15,12 +15,16 @@ varying vec3 v_normal;
 uniform vec3 u_camera_position;
 uniform vec3 u_light_pos;
 uniform vec3 u_light_intensity;
+uniform vec3 u_f0;
 
 uniform sampler2D u_texture;
 uniform sampler2D u_normal_texture;
 uniform sampler2D u_rough_texture;
 uniform sampler2D u_metal_texture;
 uniform sampler2D u_2DLUT;
+uniform sampler2D u_emissive;
+uniform sampler2D u_opacity;
+uniform bool u_use_metal;
 
 const float GAMMA = 2.2;
 const float INV_GAMMA = 1.0 / GAMMA;
@@ -34,6 +38,10 @@ struct PBRMat
 	vec3 F0;
 	float cosTheta;
 
+	//extra
+	vec3 emissive;
+	float opacity;
+
 	// vectors
 	vec3 N;
 	vec3 H;
@@ -46,6 +54,7 @@ struct PBRMat
 	float NdotL;
 	float NdotV;
 	float NdotH;
+	float HdotL;
 };
 
 // degamma
@@ -113,9 +122,9 @@ vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
-vec3 FresnelReflectance(float NdotL, vec3 F0, float roughness)
+vec3 FresnelReflectance(float angle, vec3 F0, float roughness)
 {
-	return F0 + (1-F0)*pow(1-NdotL, 5.0);
+	return F0 + (1-F0)*pow(1-angle, 5.0);
 }
 
 
@@ -163,11 +172,17 @@ void computeVectors(inout PBRMat material){
 void computeMaterialProperties(inout PBRMat material){
 	material.albedo = texture2D(u_texture, v_uv).xyz;	
 	material.roughness = texture2D(u_rough_texture, v_uv).x;
-	material.metalness = texture2D(u_metal_texture, v_uv).x;
+	if (u_use_metal) material.metalness = texture2D(u_metal_texture, v_uv).x;
+	else material.metalness =  texture2D(u_rough_texture, v_uv).y;
 	material.NdotL = clamp(dot(material.N, material.L), 0.0, 1.0);
 	material.NdotV = clamp(dot(material.N, material.V), 0.0, 1.0);
 	material.NdotH = clamp(dot(material.N, material.H), 0.0, 1.0);
-	material.F0 = mix( vec3(0.5), material.albedo, material.metalness ); //we compute the reflection in base to the color and the metalness
+	material.HdotL = clamp(dot(material.H, material.L), 0.0, 1.0);
+	material.F0 = mix( u_f0, material.albedo, material.metalness ); //we compute the reflection in base to the color and the metalness
+
+	// extra
+	material.emissive = texture2D(u_emissive, v_uv).xyz;
+	material.opacity = texture2D(u_opacity, v_uv).x;
 }
 
 float G1(float dot_product, float roughness){
@@ -189,9 +204,9 @@ vec3 computeDirect(PBRMat material){
 	vec3 f_diffuse = material.albedo * RECIPROCAL_PI;
 
 	// Specular component
-	vec3 F = FresnelReflectance(material.NdotL, material.F0, material.roughness);    //F
-	float G = G1(material.NdotL)*G1(material.NdotV, material.roughness);		     //G
-	float D = Distribution(material.NdotH, material.roughness); 		             //D
+	vec3 F = FresnelReflectance(material.HdotL, material.F0, material.roughness);    					 //F
+	float G = G1(material.NdotL, material.roughness)*G1(material.NdotV, material.roughness);		     //G
+	float D = Distribution(material.NdotH, material.roughness); 		             					 //D
 
 	vec3 f_specular = (F * G * D) / (4.0 * material.NdotL * material.NdotV + 1e-6);  
 
@@ -204,8 +219,8 @@ vec3 computeDirect(PBRMat material){
 vec3 computeIBL(PBRMat material){
 	// IBL SPECULAR
 	vec3 specularSample = getReflectionColor(material.R, material.roughness);
-	vec3 Ks = FresnelSchlickRoughness(material.cosTheta, material.F0, material.roughness);
-	vec3 brdf2D = texture2D(u_2DLUT, v_uv);
+	vec3 Ks = FresnelSchlickRoughness(material.NdotV, material.F0, material.roughness);
+	vec2 brdf2D = texture2D(u_2DLUT, v_uv).xy;
 	vec3 specularBRDF =  Ks * brdf2D.x + brdf2D.y;
 	vec3 specularIBL = specularSample * specularBRDF;
 	// IBL DIFFUSE
@@ -219,7 +234,7 @@ vec3 computeIBL(PBRMat material){
 vec4 getPixelColor(PBRMat material){
 	vec3 direct = computeDirect(material);
 	vec3 ibl = computeIBL(material);
-	return vec4(direct + ibl, 1.0);
+	return vec4(direct + ibl + material.emissive, material.opacity);
 }
 
 void main()

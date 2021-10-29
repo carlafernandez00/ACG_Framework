@@ -50,8 +50,7 @@ void StandardMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 
 void StandardMaterial::renderInMenu()
 {
-	//ImGui::ColorEdit3("Color", (float*)&color); // Edit 3 floats representing a color
-
+	ImGui::ColorEdit3("Color", (float*)&color); // Edit 3 floats representing a color
 }
 
 WireframeMaterial::WireframeMaterial()
@@ -276,6 +275,8 @@ void ReflectiveMaterial::renderInMenu()
 PBRMaterial::PBRMaterial()
 {
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/pbr.fs");
+	f0 = Vector3(0.04, 0.04, 0.04);
+	emissive = Texture::getBlackTexture();
 }
 
 PBRMaterial::~PBRMaterial()
@@ -298,6 +299,42 @@ void PBRMaterial::setUniforms(Camera* camera, Matrix44 model)
 	if (roughness) shader->setUniform("u_rough_texture", roughness, 2);
 	if (metalness) shader->setUniform("u_metal_texture", metalness, 3);
 
+	// light
 	shader->setUniform("u_light_pos", Application::instance->light_list[0]->position);
 	shader->setUniform("u_light_intensity", Application::instance->light_list[0]->difuse);
+	shader->setUniform("u_use_metal", use_metal);
+
+	// ibl
+	if (brdfLUT) shader->setUniform("u_2DLUT", brdfLUT, 4);
+	shader->setUniform("u_f0", f0);
+
+	// extra
+	if (emissive) shader->setUniform("u_emissive", emissive, 5);
+	if (opacity) shader->setUniform("u_opacity", opacity, 6);
+}
+
+void PBRMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
+{
+	if (mesh && shader)
+	{
+		//enable shader
+		shader->enable();
+
+		//upload uniforms
+		setUniforms(camera, model);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		//do the draw call
+		mesh->render(GL_TRIANGLES);
+		glDisable(GL_BLEND);
+		//disable shader
+		shader->disable();
+	}
+}
+
+void PBRMaterial::renderInMenu()
+{
+	ImGui::ColorEdit3("F0", (float*)&f0); // Edit 3 floats representing a color
+	ImGui::Checkbox("Use Roughness and Metalness", &use_metal);
 }

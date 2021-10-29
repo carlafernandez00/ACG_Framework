@@ -102,8 +102,16 @@ public:
 	Texture* normal;
 	Texture* roughness;
 	Texture* metalness;
+	Texture* emissive;
+	Texture* opacity;
+	Texture* brdfLUT;
+
+	Vector3 f0;
+	bool use_metal;
 
 	void setUniforms(Camera* camera, Matrix44 model);
+	void render(Mesh* mesh, Matrix44 model, Camera* camera);
+	void renderInMenu();
 };
 
 #endif
