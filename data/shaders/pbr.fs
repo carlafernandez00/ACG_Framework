@@ -16,6 +16,8 @@ uniform vec3 u_camera_position;
 uniform vec3 u_light_pos;
 uniform vec3 u_light_intensity;
 uniform vec3 u_f0;
+uniform float u_roughness_factor;
+uniform vec3 u_color;
 
 uniform sampler2D u_texture;
 uniform sampler2D u_normal_texture;
@@ -36,6 +38,7 @@ struct PBRMat
 	float metalness;
 	vec3 albedo;
 	vec3 F0;
+	vec3 diffuseColor;
 	float cosTheta;
 
 	//extra
@@ -55,6 +58,7 @@ struct PBRMat
 	float NdotV;
 	float NdotH;
 	float HdotL;
+	float HdotV;
 };
 
 // degamma
@@ -127,7 +131,6 @@ vec3 FresnelReflectance(float angle, vec3 F0, float roughness)
 	return F0 + (1-F0)*pow(1-angle, 5.0);
 }
 
-
 /* 
 	Convert 0-Inf range to 0-1 range so we can
 	display info on screen
@@ -164,24 +167,28 @@ void computeVectors(inout PBRMat material){
 	material.H = (material.V + material.L) / 2.0;
 	// agafem els vectors normals de la textura->passem els valors de 0..1 a -1..1
 	vec3 normal;
-	normal = 2.0*texture2D(u_normal_texture, v_uv).xyz - vec3(1.0);	
+	normal = texture2D(u_normal_texture, v_uv).xyz;	
 	material.N = perturbNormal( v_normal, material.V, v_uv, normal);
-	material.R = normalize(reflect(-material.L, material.N)); 
+	material.R = normalize(reflect(-material.V, material.N)); 
 }
 
 void computeMaterialProperties(inout PBRMat material){
-	material.albedo = texture2D(u_texture, v_uv).xyz;	
-	material.roughness = texture2D(u_rough_texture, v_uv).x;
+	material.albedo = gamma_to_linear(texture2D(u_texture, v_uv).xyz);	
+	material.roughness = texture2D(u_rough_texture, v_uv).y * u_roughness_factor;
+	material.roughness = clamp(material.roughness, 0.0 + 0.01, 1.0 - 0.01);
 	if (u_use_metal) material.metalness = texture2D(u_metal_texture, v_uv).x;
-	else material.metalness =  texture2D(u_rough_texture, v_uv).y;
+	else material.metalness =  texture2D(u_rough_texture, v_uv).z;
+	material.metalness = clamp(material.metalness, 0.0 + 0.01, 1.0 - 0.01);
 	material.NdotL = clamp(dot(material.N, material.L), 0.0, 1.0);
-	material.NdotV = clamp(dot(material.N, material.V), 0.0, 1.0);
+	material.NdotV = clamp(dot(material.N, material.V), 0.0 + 0.01, 1.0 - 0.01);
 	material.NdotH = clamp(dot(material.N, material.H), 0.0, 1.0);
 	material.HdotL = clamp(dot(material.H, material.L), 0.0, 1.0);
-	material.F0 = mix( u_f0, material.albedo, material.metalness ); //we compute the reflection in base to the color and the metalness
+	material.HdotV = clamp(dot(material.H, material.V), 0.0, 1.0);
+	material.F0 = mix( u_f0, material.albedo * u_color, material.metalness ); //we compute the reflection in base to the color and the metalness
+	material.diffuseColor = mix( vec3(0.0), material.albedo * u_color, material.metalness ); //we compute the reflection in base to the color and the metalness
 
 	// extra
-	material.emissive = texture2D(u_emissive, v_uv).xyz;
+	material.emissive = gamma_to_linear(texture2D(u_emissive, v_uv).xyz);
 	material.opacity = texture2D(u_opacity, v_uv).x;
 }
 
@@ -201,11 +208,11 @@ vec3 computeDirect(PBRMat material){
 	vec3 direct;
 	/// BSDF:
 	// Diffuse component
-	vec3 f_diffuse = material.albedo * RECIPROCAL_PI;
+	vec3 f_diffuse = material.diffuseColor * RECIPROCAL_PI;
 
 	// Specular component
 	vec3 F = FresnelReflectance(material.HdotL, material.F0, material.roughness);    					 //F
-	float G = G1(material.NdotL, material.roughness)*G1(material.NdotV, material.roughness);		     //G
+	float G = G1(material.HdotL, material.roughness)*G1(material.HdotV, material.roughness);		     //G
 	float D = Distribution(material.NdotH, material.roughness); 		             					 //D
 
 	vec3 f_specular = (F * G * D) / (4.0 * material.NdotL * material.NdotV + 1e-6);  
@@ -220,13 +227,12 @@ vec3 computeIBL(PBRMat material){
 	// IBL SPECULAR
 	vec3 specularSample = getReflectionColor(material.R, material.roughness);
 	vec3 Ks = FresnelSchlickRoughness(material.NdotV, material.F0, material.roughness);
-	vec2 brdf2D = texture2D(u_2DLUT, v_uv).xy;
+	vec2 brdf2D = texture2D(u_2DLUT, vec2(material.NdotV, material.roughness)).xy;
 	vec3 specularBRDF =  Ks * brdf2D.x + brdf2D.y;
 	vec3 specularIBL = specularSample * specularBRDF;
 	// IBL DIFFUSE
 	vec3 diffuseSample = getReflectionColor(material.N, material.roughness);
-	vec3 diffuseColor = material.albedo * RECIPROCAL_PI;
-	vec3 diffuseIBL = diffuseSample * diffuseColor;
+	vec3 diffuseIBL = diffuseSample * material.diffuseColor * RECIPROCAL_PI;
 	diffuseIBL *= (1 - Ks);
 	return diffuseIBL + specularIBL;
 }
@@ -243,7 +249,7 @@ void main()
 	PBRMat material;
 
 	// 2. Fill Material
-	material.light = u_light_intensity;
+	material.light = gamma_to_linear(u_light_intensity);
 	computeVectors(material);
 	computeMaterialProperties(material);
 
@@ -251,13 +257,13 @@ void main()
 	vec4 color = getPixelColor(material);
 
 	// 4. Apply Tonemapping
-	// ...
+	color.xyz = toneMapUncharted(color.xyz);
 
 	// 5. Any extra texture to apply after tonemapping
 	// ...
 
 	// Last step: to gamma space
-	// ...
+	color.xyz = linear_to_gamma(color.xyz);
 
 	gl_FragColor = color;
 }

@@ -105,9 +105,15 @@ public:
 	Texture* emissive;
 	Texture* opacity;
 	Texture* brdfLUT;
-
+	Texture* prem_0;
+	Texture* prem_1;
+	Texture* prem_2;
+	Texture* prem_3;
+	Texture* prem_4;
+	
 	Vector3 f0;
 	bool use_metal;
+	float roughness_factor;
 
 	void setUniforms(Camera* camera, Matrix44 model);
 	void render(Mesh* mesh, Matrix44 model, Camera* camera);

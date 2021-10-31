@@ -277,6 +277,14 @@ PBRMaterial::PBRMaterial()
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/pbr.fs");
 	f0 = Vector3(0.04, 0.04, 0.04);
 	emissive = Texture::getBlackTexture();
+	opacity = NULL;
+	prem_0 = new Texture();
+	prem_1 = new Texture();
+	prem_2 = new Texture();
+	prem_3 = new Texture();
+	prem_4 = new Texture();
+	roughness_factor = 1.0;
+	color = vec4(1.f, 1.f, 1.f, 1.f);
 }
 
 PBRMaterial::~PBRMaterial()
@@ -291,6 +299,7 @@ void PBRMaterial::setUniforms(Camera* camera, Matrix44 model)
 	shader->setUniform("u_model", model);
 	shader->setUniform("u_time", Application::instance->time);
 	shader->setUniform("u_output", Application::instance->output);
+	shader->setUniform("u_color", color);
 
 	shader->setUniform("u_exposure", Application::instance->scene_exposure);
 	// material
@@ -307,10 +316,18 @@ void PBRMaterial::setUniforms(Camera* camera, Matrix44 model)
 	// ibl
 	if (brdfLUT) shader->setUniform("u_2DLUT", brdfLUT, 4);
 	shader->setUniform("u_f0", f0);
+	if (Application::instance->skybox) shader->setUniform("u_skybox_texture", Application::instance->skybox->material->texture, 5);
+	if (prem_0) shader->setUniform("u_texture_prem_0", prem_0, 6);
+	if (prem_1) shader->setUniform("u_texture_prem_1", prem_1, 7);
+	if (prem_2) shader->setUniform("u_texture_prem_2", prem_2, 8);
+	if (prem_3) shader->setUniform("u_texture_prem_3", prem_3, 9);
+	if (prem_4) shader->setUniform("u_texture_prem_4", prem_4, 10);
 
 	// extra
-	if (emissive) shader->setUniform("u_emissive", emissive, 5);
-	if (opacity) shader->setUniform("u_opacity", opacity, 6);
+	if (emissive) shader->setUniform("u_emissive", emissive, 11);
+	if (opacity) shader->setUniform("u_opacity", opacity, 12);
+	else shader->setUniform("u_opacity", Texture::getWhiteTexture(), 12);
+	shader->setUniform("u_roughness_factor", roughness_factor);
 }
 
 void PBRMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
@@ -322,12 +339,20 @@ void PBRMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 
 		//upload uniforms
 		setUniforms(camera, model);
+		if (opacity) {
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_FRONT);
+			glFrontFace(GL_CW);
+		}
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		//do the draw call
 		mesh->render(GL_TRIANGLES);
+
 		glDisable(GL_BLEND);
+		glDisable(GL_CULL_FACE);
+
 		//disable shader
 		shader->disable();
 	}
@@ -336,5 +361,7 @@ void PBRMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 void PBRMaterial::renderInMenu()
 {
 	ImGui::ColorEdit3("F0", (float*)&f0); // Edit 3 floats representing a color
+	ImGui::ColorEdit3("Base Color", (float*)&color); // Edit 3 floats representing a color
 	ImGui::Checkbox("Use Roughness and Metalness", &use_metal);
+	ImGui::SliderFloat("Roughness Factor", &roughness_factor, 0.0, 1.0);
 }
