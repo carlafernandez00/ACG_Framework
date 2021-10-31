@@ -17,7 +17,8 @@ uniform vec3 u_light_pos;
 uniform vec3 u_light_intensity;
 uniform vec3 u_f0;
 uniform float u_roughness_factor;
-uniform vec3 u_color;
+uniform float u_metalness_factor;
+uniform vec4 u_color;
 
 uniform sampler2D u_texture;
 uniform sampler2D u_normal_texture;
@@ -178,14 +179,14 @@ void computeMaterialProperties(inout PBRMat material){
 	material.roughness = clamp(material.roughness, 0.0 + 0.01, 1.0 - 0.01);
 	if (u_use_metal) material.metalness = texture2D(u_metal_texture, v_uv).x;
 	else material.metalness =  texture2D(u_rough_texture, v_uv).z;
-	material.metalness = clamp(material.metalness, 0.0 + 0.01, 1.0 - 0.01);
+	material.metalness = clamp(material.metalness * u_metalness_factor, 0.0 + 0.01, 1.0 - 0.01);
 	material.NdotL = clamp(dot(material.N, material.L), 0.0, 1.0);
 	material.NdotV = clamp(dot(material.N, material.V), 0.0 + 0.01, 1.0 - 0.01);
 	material.NdotH = clamp(dot(material.N, material.H), 0.0, 1.0);
 	material.HdotL = clamp(dot(material.H, material.L), 0.0, 1.0);
 	material.HdotV = clamp(dot(material.H, material.V), 0.0, 1.0);
-	material.F0 = mix( u_f0, material.albedo * u_color, material.metalness ); //we compute the reflection in base to the color and the metalness
-	material.diffuseColor = mix( vec3(0.0), material.albedo * u_color, material.metalness ); //we compute the reflection in base to the color and the metalness
+	material.F0 = mix( u_f0, material.albedo * u_color.xyz, material.metalness ); //we compute the reflection in base to the color and the metalness
+	material.diffuseColor = mix( vec3(0.0), material.albedo * u_color.xyz, material.metalness ); //we compute the reflection in base to the color and the metalness
 
 	// extra
 	material.emissive = gamma_to_linear(texture2D(u_emissive, v_uv).xyz);

@@ -329,7 +329,7 @@ void PBRMaterial::setUniforms(Camera* camera, Matrix44 model)
 	if (opacity) shader->setUniform("u_opacity", opacity, 12);
 	else shader->setUniform("u_opacity", Texture::getWhiteTexture(), 12);
 	shader->setUniform("u_roughness_factor", roughness_factor);
-	//shader->setUniform("u_metalness_factor", metalness_factor);
+	shader->setUniform("u_metalness_factor", metalness_factor);
 }
 
 void PBRMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
