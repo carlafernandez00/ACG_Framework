@@ -15,7 +15,6 @@
 #include <cmath>
 
 #define PATH "data/models/helmet"
-#define PATH2 "data/models/ice"
 bool render_wireframe = false;
 Camera* Application::camera = nullptr;
 Application* Application::instance = NULL;
@@ -131,21 +130,20 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		ref_node->material = ref_mat;
 		node_list.push_back(ref_node);
 
-		/// PBR MATERIAL:
+		/// PBR MATERIAL: helmet
 		SceneNode* pbr_node = new SceneNode("PBR Material");  // Definim el scene node 
 		pbr_node->mesh = Mesh::Get( PATH "/helmet.obj.mbin");   // li assignem la malla (lantern->predeterminada)
 		pbr_node->model.setTranslation(0.0, 0.0, 2.0);
-		//pbr_node->model.scale(0.01, 0.01, 0.01);
 
 		PBRMaterial* pbr_mat = new PBRMaterial();						// El definim amb el material PBR
 		pbr_mat->albedo = Texture::Get(PATH "/albedo.png");				// Li assignem la textura albedo
 		pbr_mat->normal = Texture::Get(PATH  "/normal.png");			// Li assignem la textura normal
 		pbr_mat->roughness = Texture::Get(PATH  "/roughness.png");		// Li assignem la textura roughness
 		pbr_mat->metalness = Texture::Get(PATH "/metalness.png");		// Li assignem la textura metalness
-		pbr_mat->emissive = Texture::Get(PATH "/emissive.png");		// Li assignem la textura emissive
-		pbr_mat->opacity = Texture::Get(PATH "/opacity.png");			// Li assignem la textura opacity
+		pbr_mat->emissive = Texture::Get(PATH "/emissive.png");			// Li assignem la textura emissive
+		//pbr_mat->opacity = Texture::Get(PATH "/opacity.png");			// Li assignem la textura opacity
 		pbr_mat->brdfLUT = Texture::Get("data/brdfLUT.png");			// Li assignem la textura LUT 2D
-		pbr_mat->use_metal = true;
+		pbr_mat->use_metal = false;
 		LEVEL = 1;  pbr_mat->prem_0->cubemapFromHDRE(hdre, LEVEL);
 		LEVEL = 2;  pbr_mat->prem_1->cubemapFromHDRE(hdre, LEVEL);
 		LEVEL = 3; pbr_mat->prem_2->cubemapFromHDRE(hdre, LEVEL);
@@ -154,29 +152,6 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		
 		pbr_node->material = pbr_mat;
 		node_list.push_back(pbr_node);
-
-		/// PBR MATERIAL: ball
-		SceneNode* pbr_node2 = new SceneNode("PBR Material 2");  // Definim el scene node 
-		pbr_node2->mesh = Mesh::Get("data/meshes/sphere.obj.mbin");   // li assignem la malla (sphere->predeterminada)
-		pbr_node2->model.setTranslation(2.0, 0.0, 2.0);
-
-		PBRMaterial* pbr_mat2 = new PBRMaterial();						// El definim amb el material PBR
-		pbr_mat2->albedo = Texture::Get(PATH2 "/albedo.png");				// Li assignem la textura albedo
-		pbr_mat2->normal = Texture::Get(PATH2  "/normal.png");			// Li assignem la textura normal
-		pbr_mat2->roughness = Texture::Get(PATH2  "/roughness.png");		// Li assignem la textura roughness
-		pbr_mat2->metalness = Texture::Get(PATH2 "/metalness.png");		// Li assignem la textura metalness
-		pbr_mat2->emissive = Texture::Get(PATH2 "/emissive.png");		// Li assignem la textura emissive
-		pbr_mat2->opacity = Texture::Get(PATH2 "/opacity.png");			// Li assignem la textura opacity
-		pbr_mat2->brdfLUT = Texture::Get("data/brdfLUT.png");			// Li assignem la textura LUT 2D
-		pbr_mat2->use_metal = true;
-		LEVEL = 1;  pbr_mat2->prem_0->cubemapFromHDRE(hdre, LEVEL);
-		LEVEL = 2;  pbr_mat2->prem_1->cubemapFromHDRE(hdre, LEVEL);
-		LEVEL = 3; pbr_mat2->prem_2->cubemapFromHDRE(hdre, LEVEL);
-		LEVEL = 4; pbr_mat2->prem_3->cubemapFromHDRE(hdre, LEVEL);
-		LEVEL = 5;  pbr_mat2->prem_4->cubemapFromHDRE(hdre, LEVEL);
-
-		pbr_node2->material = pbr_mat2;
-		node_list.push_back(pbr_node2);
 	}
 	
 	//hide the cursor

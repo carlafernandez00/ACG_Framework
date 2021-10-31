@@ -284,6 +284,7 @@ PBRMaterial::PBRMaterial()
 	prem_3 = new Texture();
 	prem_4 = new Texture();
 	roughness_factor = 1.0;
+	metalness_factor = 1.0;
 	color = vec4(1.f, 1.f, 1.f, 1.f);
 }
 
@@ -328,6 +329,7 @@ void PBRMaterial::setUniforms(Camera* camera, Matrix44 model)
 	if (opacity) shader->setUniform("u_opacity", opacity, 12);
 	else shader->setUniform("u_opacity", Texture::getWhiteTexture(), 12);
 	shader->setUniform("u_roughness_factor", roughness_factor);
+	//shader->setUniform("u_metalness_factor", metalness_factor);
 }
 
 void PBRMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
@@ -364,4 +366,5 @@ void PBRMaterial::renderInMenu()
 	ImGui::ColorEdit3("Base Color", (float*)&color); // Edit 3 floats representing a color
 	ImGui::Checkbox("Use Roughness and Metalness", &use_metal);
 	ImGui::SliderFloat("Roughness Factor", &roughness_factor, 0.0, 1.0);
+	ImGui::SliderFloat("Metalness Factor", &metalness_factor, 0.0, 1.0);
 }

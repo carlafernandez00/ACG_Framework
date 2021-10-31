@@ -114,6 +114,7 @@ public:
 	Vector3 f0;
 	bool use_metal;
 	float roughness_factor;
+	float metalness_factor;
 
 	void setUniforms(Camera* camera, Matrix44 model);
 	void render(Mesh* mesh, Matrix44 model, Camera* camera);
