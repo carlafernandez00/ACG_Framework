@@ -120,5 +120,9 @@ public:
 	void render(Mesh* mesh, Matrix44 model, Camera* camera);
 	void renderInMenu();
 };
+class VolumeMaterial : public StandardMaterial {
+public:
+
+}
 
 #endif

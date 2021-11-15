@@ -152,6 +152,13 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		
 		pbr_node->material = pbr_mat;
 		node_list.push_back(pbr_node);
+
+		// VOLUME
+		Volume* volume = new Volume();
+		volume->loadPNG("data/volumes/teapot_16_16.png", 16, 16);
+		Texture* vol_text = new Texture();
+		vol_text->create3DFromVolume(volume, GL_CLAMP_TO_EDGE);
+
 	}
 	
 	//hide the cursor
