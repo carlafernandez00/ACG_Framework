@@ -1,4 +1,4 @@
-#define MAX_ITERATIONS 80
+#define MAX_ITERATIONS 100000
 
 varying vec3 v_position;
 varying vec3 v_world_position;
@@ -7,6 +7,7 @@ uniform vec3 u_camera_position;
 uniform sampler3D u_vol_text;
 uniform mat4 u_iModel;
 uniform float u_step;
+uniform float u_brightness;
 
 void main(){
 	// 1. Ray setup
@@ -22,11 +23,11 @@ void main(){
 	// Ray loop
 	for(int i = 0; i<MAX_ITERATIONS; i++){
 		// 2. Volume sampling
-		d = texture(u_vol_text, (sample_pos / 2.0 + vec3(0.5))).x;
+		d = texture3D(u_vol_text, (sample_pos / 2.0 + vec3(0.5))).x;
 
 		// 3. Classification
-		//sample_color = vec4(d);
-		sample_color = vec4(d,1-d,0,d*d);
+		sample_color = vec4(d);
+		//sample_color = vec4(d,1-d,0,d*d);
 
 		// 4. Composition
 		sample_color.rgb *= sample_color.a;
@@ -41,7 +42,9 @@ void main(){
 		
 	}
 
+	if (color.a <= 0.01) discard;
+
 	//7. Final color	
-	gl_FragColor = color;
+	gl_FragColor = u_brightness * color;
 
 }

@@ -155,7 +155,8 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 		// VOLUME MATERIAL: teapot
 		SceneNode* vol_node = new SceneNode("Volume"); // Definim el scene node
-		vol_node->mesh = Mesh::Get("data/meshes/box.ASE.mbin"); // li assignem una malla (box)
+		//vol_node->mesh = Mesh::Get("data/meshes/box.ASE.mbin"); // li assignem una malla (box)
+		vol_node->mesh = Mesh::getCube();
 		vol_node->model.setTranslation(0.0, 0.0, 0.0);
 
 		// Definim la textura del volum
@@ -163,7 +164,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		volume->loadPNG("data/volumes/teapot_16_16.png", 16, 16);
 		Texture* vol_text = new Texture();
 		vol_text->create3DFromVolume(volume, GL_CLAMP_TO_EDGE);
-		//vol_node->model.scale(volume->width*volume->widthSpacing, volume->height*volume->heightSpacing, volume->depth*volume->depthSpacing);
+		//vol_node->model.setScale(volume->width*volume->widthSpacing, volume->height*volume->heightSpacing, volume->depth*volume->depthSpacing);
 
 		VolumeMaterial* vol_mat = new VolumeMaterial();						// El definim amb el material Volume
 		vol_mat->texture = vol_text;

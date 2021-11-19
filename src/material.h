@@ -123,6 +123,7 @@ public:
 class VolumeMaterial : public StandardMaterial {
 public:
 	float step;
+	float brightness;
 	VolumeMaterial();
 	~VolumeMaterial();
 

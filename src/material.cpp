@@ -393,6 +393,7 @@ void VolumeMaterial::setUniforms(Camera* camera, Matrix44 model)
 	inv_model.inverse();
 	shader->setUniform("u_iModel", inv_model);
 	shader->setUniform("u_vol_text", texture);
+	shader->setUniform("u_brightness", brightness);
 
 }
 
@@ -403,6 +404,10 @@ void VolumeMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 		//enable shader
 		shader->enable();
 
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+		glFrontFace(GL_CW);
+
 		//upload uniforms
 		setUniforms(camera, model);
 
@@ -411,10 +416,15 @@ void VolumeMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 
 		//disable shader
 		shader->disable();
+
+		glDisable(GL_CULL_FACE);
+
 	}
 }
 
 void VolumeMaterial::renderInMenu()
 {
-	ImGui::SliderFloat("Step", &step, 0.0, 1.0);
+	ImGui::SliderFloat("Step", &step, 0.001, 0.1);
+	ImGui::SliderFloat("Brightness", &brightness, 1.0, 20.0);
+
 }
