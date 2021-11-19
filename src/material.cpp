@@ -368,3 +368,53 @@ void PBRMaterial::renderInMenu()
 	ImGui::SliderFloat("Roughness Factor", &roughness_factor, 0.0, 1.0);
 	ImGui::SliderFloat("Metalness Factor", &metalness_factor, 0.0, 1.0);
 }
+
+VolumeMaterial::VolumeMaterial()
+{
+	color = vec4(1.f, 1.f, 1.f, 1.f);
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/volume.fs");
+	step = 0.01;
+}
+
+VolumeMaterial::~VolumeMaterial()
+{
+}
+
+void VolumeMaterial::setUniforms(Camera* camera, Matrix44 model)
+{
+	//upload node uniforms
+	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	shader->setUniform("u_camera_position", camera->eye);
+	shader->setUniform("u_model", model);
+
+	shader->setUniform("u_step", step);
+	shader->setUniform("u_color", color);
+	Matrix44 inv_model = model;
+	inv_model.inverse();
+	shader->setUniform("u_iModel", inv_model);
+	shader->setUniform("u_vol_text", texture);
+
+}
+
+void VolumeMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
+{
+	if (mesh && shader)
+	{
+		//enable shader
+		shader->enable();
+
+		//upload uniforms
+		setUniforms(camera, model);
+
+		//do the draw call
+		mesh->render(GL_TRIANGLES);
+
+		//disable shader
+		shader->disable();
+	}
+}
+
+void VolumeMaterial::renderInMenu()
+{
+	ImGui::SliderFloat("Step", &step, 0.0, 1.0);
+}

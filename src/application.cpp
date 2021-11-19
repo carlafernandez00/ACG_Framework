@@ -49,7 +49,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 	{
 		
-		/// SKYBOX
+		/*/// SKYBOX
 		skybox = new SkyboxNode("Skybox node");							// Definim la skybox com un objecte SkyNode
 		skybox->mesh = Mesh::Get("data/meshes/box.ASE.mbin");			// Li assignem la malla amb forma de cub
 		// Definim la skybox centrada a la càmera i la escalem
@@ -151,14 +151,24 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		LEVEL = 5;  pbr_mat->prem_4->cubemapFromHDRE(hdre, LEVEL);
 		
 		pbr_node->material = pbr_mat;
-		node_list.push_back(pbr_node);
+		node_list.push_back(pbr_node);*/
 
-		// VOLUME
+		// VOLUME MATERIAL: teapot
+		SceneNode* vol_node = new SceneNode("Volume"); // Definim el scene node
+		vol_node->mesh = Mesh::Get("data/meshes/box.ASE.mbin"); // li assignem una malla (box)
+		vol_node->model.setTranslation(0.0, 0.0, 0.0);
+
+		// Definim la textura del volum
 		Volume* volume = new Volume();
 		volume->loadPNG("data/volumes/teapot_16_16.png", 16, 16);
 		Texture* vol_text = new Texture();
 		vol_text->create3DFromVolume(volume, GL_CLAMP_TO_EDGE);
+		//vol_node->model.scale(volume->width*volume->widthSpacing, volume->height*volume->heightSpacing, volume->depth*volume->depthSpacing);
 
+		VolumeMaterial* vol_mat = new VolumeMaterial();						// El definim amb el material Volume
+		vol_mat->texture = vol_text;
+		vol_node->material = vol_mat;
+		node_list.push_back(vol_node);
 	}
 	
 	//hide the cursor
@@ -178,7 +188,7 @@ void Application::render(void)
 	camera->enable();
 
 	//render skybox
-	skybox->material->render(skybox->mesh, skybox->model, camera);
+	//skybox->material->render(skybox->mesh, skybox->model, camera);
 	
 	//set flags
 	glEnable(GL_DEPTH_TEST);
@@ -228,7 +238,7 @@ void Application::update(double seconds_elapsed)
 		Input::centerMouse();
 
 	//Actualitzem el centre de la box segons la posició de la càmera
-	skybox->model.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
+	//skybox->model.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
 }
 
 //Keyboard event handler (sync input)

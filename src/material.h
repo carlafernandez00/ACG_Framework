@@ -122,7 +122,13 @@ public:
 };
 class VolumeMaterial : public StandardMaterial {
 public:
+	float step;
+	VolumeMaterial();
+	~VolumeMaterial();
 
-}
+	void setUniforms(Camera* camera, Matrix44 model);
+	void render(Mesh* mesh, Matrix44 model, Camera* camera);
+	void renderInMenu();
+};
 
 #endif
