@@ -374,6 +374,13 @@ VolumeMaterial::VolumeMaterial()
 	color = vec4(1.f, 1.f, 1.f, 1.f);
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/volume.fs");
 	step = 0.01;
+	brightness = 10.0;
+	use_jittering = false;
+	noise_texture = Texture::Get("data/blueNoise.png");
+	use_tf = false;
+	tf_text = Texture::Get("data/LUT_2.png"); // TODO
+	use_clipping = false;
+	plane = Vector4(0.0, 0.0, 0.0, 0.0);
 }
 
 VolumeMaterial::~VolumeMaterial()
@@ -392,9 +399,18 @@ void VolumeMaterial::setUniforms(Camera* camera, Matrix44 model)
 	Matrix44 inv_model = model;
 	inv_model.inverse();
 	shader->setUniform("u_iModel", inv_model);
-	shader->setUniform("u_vol_text", texture);
+	shader->setUniform("u_vol_text", texture, 0);
 	shader->setUniform("u_brightness", brightness);
 
+	shader->setUniform("u_noise_text", noise_texture, 1);
+	shader->setUniform("u_use_jittering", use_jittering);
+	shader->setUniform("u_texture_width", noise_texture->width);
+
+	shader->setUniform("u_use_tf", use_tf);
+	shader->setUniform("u_tf_text", tf_text, 2);
+
+	shader->setUniform("u_use_clipping", use_clipping);
+	shader->setUniform("u_plane", plane);
 }
 
 void VolumeMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
@@ -424,7 +440,11 @@ void VolumeMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 
 void VolumeMaterial::renderInMenu()
 {
+	ImGui::ColorEdit3("Base Color", (float*)&color); // Edit 3 floats representing a color
 	ImGui::SliderFloat("Step", &step, 0.001, 0.1);
 	ImGui::SliderFloat("Brightness", &brightness, 1.0, 20.0);
-
+	ImGui::Checkbox("Jittering", &use_jittering);
+	ImGui::Checkbox("Transfer Function", &use_tf);
+	ImGui::Checkbox("Clipping", &use_clipping);
+	ImGui::SliderFloat4("Clip Plane", plane.v, -1.0, 1.0);
 }

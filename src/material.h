@@ -124,6 +124,12 @@ class VolumeMaterial : public StandardMaterial {
 public:
 	float step;
 	float brightness;
+	Texture* noise_texture;
+	bool use_jittering;
+	bool use_tf;
+	Texture* tf_text;
+	bool use_clipping;
+	Vector4 plane;
 	VolumeMaterial();
 	~VolumeMaterial();
 
