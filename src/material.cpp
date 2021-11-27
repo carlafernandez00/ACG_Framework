@@ -378,7 +378,7 @@ VolumeMaterial::VolumeMaterial()
 	use_jittering = false;
 	noise_texture = Texture::Get("data/blueNoise.png");
 	use_tf = false;
-	tf_text = Texture::Get("data/LUT_2.png"); // TODO
+	tf_text = Texture::Get("data/volumes/bonsai-4.png"); // TODO
 	use_clipping = false;
 	plane = Vector4(0.0, 0.0, 0.0, 0.0);
 }
@@ -445,6 +445,115 @@ void VolumeMaterial::renderInMenu()
 	ImGui::SliderFloat("Brightness", &brightness, 1.0, 20.0);
 	ImGui::Checkbox("Jittering", &use_jittering);
 	ImGui::Checkbox("Transfer Function", &use_tf);
+	if (use_tf) {
+		// Definim tres opcions de fons
+		bool changed = false;
+		/*changed |= ImGui::Combo("Transfer Function Texture", &tf_text, "BONES\0MUSCLES\0MUSCLES AND BONES\0");
+		// Assignem una textura diferent al skybox segons la opci? escollida
+		if (changed) {
+			switch (skybox_selected) {
+			case 0: material->texture->cubemapFromImages("data/environments/city"); break;
+			case 1: material->texture->cubemapFromImages("data/environments/snow"); break;
+			case 2: material->texture->cubemapFromImages("data/environments/dragonvale"); break;
+			}
+		}*/
+		
+	}
 	ImGui::Checkbox("Clipping", &use_clipping);
 	ImGui::SliderFloat4("Clip Plane", plane.v, -1.0, 1.0);
+}
+
+IsoVolumeMaterial::IsoVolumeMaterial()
+{
+	iso_val = 0.5;
+	h = 0.1;
+	color = vec4(1.f, 1.f, 1.f, 1.f);
+	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phong_volume.fs");
+}
+
+IsoVolumeMaterial::~IsoVolumeMaterial()
+{
+}
+
+void IsoVolumeMaterial::setUniforms(Camera* camera, Matrix44 model)
+{
+	// upload node uniforms
+	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	shader->setUniform("u_camera_position", camera->eye);
+	shader->setUniform("u_model", model);
+
+	shader->setUniform("u_step", step);
+	shader->setUniform("u_color", color);
+	Matrix44 inv_model = model;
+	inv_model.inverse();
+	shader->setUniform("u_iModel", inv_model);
+	shader->setUniform("u_vol_text", texture, 0);
+	shader->setUniform("u_brightness", brightness);
+
+	shader->setUniform("u_use_tf", use_tf);
+	shader->setUniform("u_tf_text", tf_text, 2);
+
+	shader->setUniform("u_iso_value", iso_val);
+	shader->setUniform("u_h", h);
+
+	// material
+	shader->setUniform("u_ka", k_ambient);
+	shader->setUniform("u_kd", k_difuse);
+	shader->setUniform("u_ks", k_specular);
+	shader->setUniform("u_alpha", k_alpha);
+
+	// Ambient light
+	shader->setUniform("u_ia", Application::instance->ambient_light);
+}
+
+void IsoVolumeMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
+{
+	if (mesh && shader)
+	{
+		//enable shader
+		shader->enable();
+
+		//upload uniforms
+		setUniforms(camera, model);
+
+		// Fem un for per afegir cada llum a l'escena
+		for (int i = 0; i < Application::instance->light_list.size(); i++) {
+			if (i == 1) {
+				//Habilitem el blending
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+				glDepthFunc(GL_LEQUAL);
+
+				shader->setUniform("u_ia", Vector3(0, 0, 0));
+			}
+
+			Application::instance->light_list[i]->setUniforms(shader);
+
+			//do the draw call
+			mesh->render(GL_TRIANGLES);
+		}
+
+		// Deshabilitem el blending
+		glDisable(GL_BLEND);
+		glDepthFunc(GL_LESS); //as default
+
+		//disable shader
+		shader->disable();
+	}
+}
+
+
+void IsoVolumeMaterial::renderInMenu()
+{
+	ImGui::ColorEdit3("Base Color", (float*)&color); // Edit 3 floats representing a color
+	ImGui::SliderFloat("Step", &step, 0.001, 0.1);
+	ImGui::SliderFloat("Brightness", &brightness, 1.0, 20.0);
+	ImGui::Checkbox("Transfer Function", &use_tf);
+	ImGui::SliderFloat("Iso-value", &iso_val, 0.0, 1.0, "%.5f");
+	ImGui::SliderFloat("h", &h, 0.00001, 0.1, "%.5f");
+	// creem sliders per modificar les constants del material
+	ImGui::DragFloat3("Ka", k_ambient.v, 0.1f, 0.0, 1.0);  //definim un rang
+	ImGui::DragFloat3("Kd", k_difuse.v, 0.1f, 0.0, 1.0);   //definim un rang
+	ImGui::DragFloat3("Ks", k_specular.v, 0.1f, 0.0, 1.0); //definim un rang
+	ImGui::SliderFloat("Alpha", &k_alpha, 0.1f, 500.0f);   //definim un rang
 }

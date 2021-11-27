@@ -161,7 +161,8 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 		// Definim la textura del volum
 		Volume* volume = new Volume();
-		volume->loadPNG("data/volumes/teapot_16_16.png", 16, 16);
+		//volume->loadPVM("data/volumes/CT-Abdomen.pvm");
+		volume->loadPNG("data/volumes/bonsai_16_16.png", 16, 16);
 		Texture* vol_text = new Texture();
 		vol_text->create3DFromVolume(volume, GL_CLAMP_TO_EDGE);
 		//vol_node->model.setScale(volume->width*volume->widthSpacing, volume->height*volume->heightSpacing, volume->depth*volume->depthSpacing);
@@ -169,7 +170,49 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		VolumeMaterial* vol_mat = new VolumeMaterial();						// El definim amb el material Volume
 		vol_mat->texture = vol_text;
 		vol_node->material = vol_mat;
-		node_list.push_back(vol_node);
+		//node_list.push_back(vol_node);
+
+		// VOLUME MATERIAL - isosurface: foot
+		SceneNode* vol_node_iso = new SceneNode("Volume_isosurface"); // Definim el scene node
+		//vol_node->mesh = Mesh::Get("data/meshes/box.ASE.mbin"); // li assignem una malla (box)
+		vol_node_iso->mesh = Mesh::getCube();
+		vol_node_iso->model.setTranslation(0.0, 0.0, 0.0);
+
+		// Definim la textura del volum
+		Volume* volume_iso = new Volume();
+		//volume_iso->loadPVM("data/volumes/CT-Abdomen.pvm");
+		volume_iso->loadPNG("data/volumes/bonsai_16_16.png", 16, 16);
+		Texture* vol_text_iso = new Texture();
+		vol_text_iso->create3DFromVolume(volume_iso, GL_CLAMP_TO_EDGE);
+		//vol_node->model.setScale(volume->width*volume->widthSpacing, volume->height*volume->heightSpacing, volume->depth*volume->depthSpacing);
+
+		IsoVolumeMaterial* vol_mat_iso = new IsoVolumeMaterial();						// El definim amb el material Volume
+		vol_mat_iso->texture = vol_text_iso;
+		vol_node_iso->material = vol_mat_iso;
+
+		// Inicialitzem les variables del material
+		vol_mat_iso->k_alpha = 10.0;
+		vol_mat_iso->k_ambient = Vector3(1.0, 1.0, 1.0);
+		vol_mat_iso->k_difuse = Vector3(1.0, 1.0, 1.0);
+		vol_mat_iso->k_specular = Vector3(1.0, 1.0, 1.0);
+
+		node_list.push_back(vol_node_iso);
+
+		// Inicialitzem les llums 
+		// LIGHT 1
+		Light* light_1 = new Light("first light");
+		light_1->specular = Vector3(1.0, 1.0, 1.0);
+		light_1->difuse = Vector3(1.0, 1.0, 1.0);
+		//light_1->position = Vector3(-50.0, 50.0, 50.0);
+		light_1->position = Vector3(0.0, 0.0, 10.0);
+		light_list.push_back(light_1);
+
+		// LIGHT 2
+		Light* light_2 = new Light("second light");
+		light_2->specular = Vector3(1.0, 0.0, 0.0);
+		light_2->difuse = Vector3(1.0, 1.0, 1.0);
+		light_2->position = Vector3(50.0, 50.0, 50.0);
+		light_list.push_back(light_2);
 	}
 	
 	//hide the cursor

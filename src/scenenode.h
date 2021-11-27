@@ -39,6 +39,7 @@ public:
 
 	Mesh* mesh = NULL;
 	Matrix44 model;
+	bool visible;
 
 	virtual void render(Camera* camera);
 	virtual void renderWireframe(Camera* camera);

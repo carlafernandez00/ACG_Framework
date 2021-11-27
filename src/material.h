@@ -130,9 +130,25 @@ public:
 	Texture* tf_text;
 	bool use_clipping;
 	Vector4 plane;
+
 	VolumeMaterial();
 	~VolumeMaterial();
 
+	void setUniforms(Camera* camera, Matrix44 model);
+	void render(Mesh* mesh, Matrix44 model, Camera* camera);
+	void renderInMenu();
+};
+
+class IsoVolumeMaterial : public VolumeMaterial {
+public:
+	float iso_val;
+	float h;
+	Vector3 k_ambient;
+	Vector3 k_difuse;
+	Vector3 k_specular;
+	float k_alpha;
+	IsoVolumeMaterial();
+	~IsoVolumeMaterial();
 	void setUniforms(Camera* camera, Matrix44 model);
 	void render(Mesh* mesh, Matrix44 model, Camera* camera);
 	void renderInMenu();

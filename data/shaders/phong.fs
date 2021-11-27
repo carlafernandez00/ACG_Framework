@@ -49,6 +49,5 @@ void main()
 	
 	// total
 	vec3 ip = ambient + difuse + specular;
-	gl_FragColor = vec4(ip * albedo, 1.0) ;
-	
+	gl_FragColor = vec4(ip * albedo, 1.0);
 }
