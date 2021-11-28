@@ -124,6 +124,7 @@ class VolumeMaterial : public StandardMaterial {
 public:
 	float step;
 	float brightness;
+	float threshold;
 	Texture* noise_texture;
 	bool use_jittering;
 	bool use_tf;

@@ -16,10 +16,12 @@
 #include "input.h"
 #include "application.h"
 #include "extra/directory_watcher.h"
+#include "texture.h"
 
 #include <iostream> //to output
 
 long last_time = 0; //this is used to calcule the elapsed time between frames
+unsigned int sc_counter = 0;
 
 Application* game = NULL;
 SDL_GLContext glcontext;
@@ -99,6 +101,18 @@ void renderGUI(SDL_Window* window, Application * game)
 		//System stats
 		ImGui::Text(getGPUStats().c_str());					   // Display some text (you can use a format strings too)
 		
+		// Download Screenshot
+		bool pressed;
+		pressed = ImGui::Button("Screenshot");
+		if (pressed) {
+			Image screenshot;
+			screenshot.fromScreen(Application::instance->window_width, Application::instance->window_height);
+			std::string filename = "data/screenshots/screenshot_" + std::to_string(sc_counter) + ".tga";
+			const char* c = filename.c_str();
+			screenshot.saveTGA(c);
+			sc_counter++;
+		}
+
 		if (ImGui::TreeNode("Scene")) {
 			ImGui::DragFloat("Exposure", &Application::instance->scene_exposure, 0.01f,-2, 2);
 			ImGui::Combo("Output", &Application::instance->output, "COMPLETE\0ALBEDO\0ROUGHNESS\0\METALNESS\0NORMALS\0");

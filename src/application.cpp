@@ -49,7 +49,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 	{
 		
-		/*/// SKYBOX
+		/// SKYBOX
 		skybox = new SkyboxNode("Skybox node");							// Definim la skybox com un objecte SkyNode
 		skybox->mesh = Mesh::Get("data/meshes/box.ASE.mbin");			// Li assignem la malla amb forma de cub
 		// Definim la skybox centrada a la càmera i la escalem
@@ -57,6 +57,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		sky_model.translate(camera->eye.x, camera->eye.y, camera->eye.z);
 		//sky_model.scale(10.0, 10.0, 10.0);
 		skybox->model = sky_model;
+		skybox->visible = false;
 
 		SkyboxMaterial* mat_skybox = new SkyboxMaterial();									 // Definim el material de la skybox
 		Texture* skybox_texture = new Texture();                                     
@@ -75,6 +76,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		standard_node->mesh = Mesh::Get("data/models/bench/bench.obj.mbin");    // Li assignem una malla (banc->predeterminat)
 		standard_node->model.setTranslation(-2.5, -0.7, -0.6);					// El situem on ens interessa i l'escalem
 		standard_node->model.scale(1.8, 1.8, 1.8);
+		standard_node->visible = false;
 
 		TextureMaterial* standard_mat = new TextureMaterial();				// Definim en stardardmaterial
 		standard_mat->texture = Texture::Get("data/models/bench/albedo.png");   // Li assignem la textura corresponent
@@ -86,6 +88,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		SceneNode* node = new SceneNode("Phong Material");				   // Definim el scene mode 
 		node->mesh = Mesh::Get("data/models/helmet/helmet.obj.mbin");	   // Li assignem una malla (helmet->predeterminat)
 		//node->model.scale(5, 5, 5);
+		node->visible = false;
 
 		PhongMaterial* mat = new PhongMaterial();						   // Definim un phong material
 		Texture* albedo = Texture::Get("data/models/helmet/albedo.png");
@@ -117,12 +120,14 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		light_2->difuse = Vector3(1.0, 1.0, 1.0);
 		light_2->position = Vector3(50.0, 50.0, 50.0);
 		light_list.push_back(light_2);
+		light_2->visible = false;
 		
 		/// REFLECTIVE MATERIAL : sphere
 		SceneNode* ref_node = new SceneNode("Reflective Material");  // Definim el scene node 
 		ref_node->mesh = Mesh::Get("data/meshes/sphere.obj.mbin");   // li assignem la malla (sphere->predeterminada)
 		ref_node->model.setTranslation(2.5, 0.0, 0.0);
 		//ref_node->model.scale(5, 5, 5);
+		ref_node->visible = false;
 
 		ReflectiveMaterial* ref_mat = new ReflectiveMaterial();      // El definim amb el material reflective
 		ref_mat->texture = skybox_texture;							 // Li assignem com a textura la skybox
@@ -134,6 +139,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		SceneNode* pbr_node = new SceneNode("PBR Material");  // Definim el scene node 
 		pbr_node->mesh = Mesh::Get( PATH "/helmet.obj.mbin");   // li assignem la malla (lantern->predeterminada)
 		pbr_node->model.setTranslation(0.0, 0.0, 2.0);
+		pbr_node->visible = false;
 
 		PBRMaterial* pbr_mat = new PBRMaterial();						// El definim amb el material PBR
 		pbr_mat->albedo = Texture::Get(PATH "/albedo.png");				// Li assignem la textura albedo
@@ -151,7 +157,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		LEVEL = 5;  pbr_mat->prem_4->cubemapFromHDRE(hdre, LEVEL);
 		
 		pbr_node->material = pbr_mat;
-		node_list.push_back(pbr_node);*/
+		node_list.push_back(pbr_node);
 
 		// VOLUME MATERIAL: teapot
 		SceneNode* vol_node = new SceneNode("Volume"); // Definim el scene node
@@ -161,8 +167,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 		// Definim la textura del volum
 		Volume* volume = new Volume();
-		//volume->loadPVM("data/volumes/CT-Abdomen.pvm");
-		volume->loadPNG("data/volumes/bonsai_16_16.png", 16, 16);
+		volume->loadPVM("data/volumes/CT-Abdomen.pvm");
 		Texture* vol_text = new Texture();
 		vol_text->create3DFromVolume(volume, GL_CLAMP_TO_EDGE);
 		//vol_node->model.setScale(volume->width*volume->widthSpacing, volume->height*volume->heightSpacing, volume->depth*volume->depthSpacing);
@@ -170,18 +175,19 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		VolumeMaterial* vol_mat = new VolumeMaterial();						// El definim amb el material Volume
 		vol_mat->texture = vol_text;
 		vol_node->material = vol_mat;
-		//node_list.push_back(vol_node);
+		node_list.push_back(vol_node);
 
 		// VOLUME MATERIAL - isosurface: foot
 		SceneNode* vol_node_iso = new SceneNode("Volume_isosurface"); // Definim el scene node
 		//vol_node->mesh = Mesh::Get("data/meshes/box.ASE.mbin"); // li assignem una malla (box)
 		vol_node_iso->mesh = Mesh::getCube();
 		vol_node_iso->model.setTranslation(0.0, 0.0, 0.0);
+		vol_node_iso->visible = false;
 
 		// Definim la textura del volum
 		Volume* volume_iso = new Volume();
-		//volume_iso->loadPVM("data/volumes/CT-Abdomen.pvm");
-		volume_iso->loadPNG("data/volumes/bonsai_16_16.png", 16, 16);
+		volume_iso->loadPVM("data/volumes/CT-Abdomen.pvm");
+		//volume_iso->loadPNG("data/volumes/teapot_16_16.png", 16, 16);
 		Texture* vol_text_iso = new Texture();
 		vol_text_iso->create3DFromVolume(volume_iso, GL_CLAMP_TO_EDGE);
 		//vol_node->model.setScale(volume->width*volume->widthSpacing, volume->height*volume->heightSpacing, volume->depth*volume->depthSpacing);
@@ -197,22 +203,6 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 		vol_mat_iso->k_specular = Vector3(1.0, 1.0, 1.0);
 
 		node_list.push_back(vol_node_iso);
-
-		// Inicialitzem les llums 
-		// LIGHT 1
-		Light* light_1 = new Light("first light");
-		light_1->specular = Vector3(1.0, 1.0, 1.0);
-		light_1->difuse = Vector3(1.0, 1.0, 1.0);
-		//light_1->position = Vector3(-50.0, 50.0, 50.0);
-		light_1->position = Vector3(0.0, 0.0, 10.0);
-		light_list.push_back(light_1);
-
-		// LIGHT 2
-		Light* light_2 = new Light("second light");
-		light_2->specular = Vector3(1.0, 0.0, 0.0);
-		light_2->difuse = Vector3(1.0, 1.0, 1.0);
-		light_2->position = Vector3(50.0, 50.0, 50.0);
-		light_list.push_back(light_2);
 	}
 	
 	//hide the cursor
@@ -239,7 +229,7 @@ void Application::render(void)
 	glDisable(GL_CULL_FACE);
 
 	for (size_t i = 0; i < node_list.size(); i++) {
-		node_list[i]->render(camera);
+		if (node_list[i]->visible) node_list[i]->render(camera);
 
 		if(render_wireframe)
 			node_list[i]->renderWireframe(camera);
@@ -282,7 +272,7 @@ void Application::update(double seconds_elapsed)
 		Input::centerMouse();
 
 	//Actualitzem el centre de la box segons la posició de la càmera
-	//skybox->model.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
+	skybox->model.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
 }
 
 //Keyboard event handler (sync input)

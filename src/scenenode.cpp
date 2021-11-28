@@ -6,16 +6,19 @@
 unsigned int SceneNode::lastNameId = 0;
 unsigned int mesh_selected = 0;
 unsigned int skybox_selected = 0;
+unsigned int material_selected = 0;
 
 SceneNode::SceneNode()
 {
 	this->name = std::string("Node" + std::to_string(lastNameId++));
+	visible = true;
 }
 
 
 SceneNode::SceneNode(const char * name)
 {
 	this->name = name;
+	visible = true;
 }
 
 SceneNode::~SceneNode()
@@ -37,6 +40,7 @@ void SceneNode::renderWireframe(Camera* camera)
 
 void SceneNode::renderInMenu()
 {
+	ImGui::Checkbox("Visible", &visible);
 	//Model edit
 	if (ImGui::TreeNode("Model")) 
 	{
@@ -53,8 +57,21 @@ void SceneNode::renderInMenu()
 	//Material
 	if (material && ImGui::TreeNode("Material"))
 	{
+		// Permet canviar el material
+		bool mat_changed = false;
+		mat_changed |= ImGui::Combo("Material", (int*)&material_selected, "BASIC\0PHONG\0");
+		// Assignem una malla i textura diferent segons la opció escollida
+		if (mat_changed) {
+			Texture* aux_text = this->material->texture;
+			switch (material_selected) {
+			case 0: material = new VolumeMaterial(); break;
+			case 1: material = new IsoVolumeMaterial(); break;
+			}
+			material->texture = aux_text;
+		}
 		material->renderInMenu();
 		ImGui::TreePop();
+		
 	}
 
 	//Geometry
@@ -62,8 +79,8 @@ void SceneNode::renderInMenu()
 	{
 		// Permet canviar la mesh 
 		bool changed = false;
-		changed |= ImGui::Combo("Mesh", (int*)&mesh_selected, "SPHERE\0HELMET\0BENCH\0");
-		// Assignem una malla i textura diferent segons la opci? escollida
+		changed |= ImGui::Combo("Mesh", (int*)&mesh_selected, "SPHERE\0HELMET\0BENCH\0CUBE\0");
+		// Assignem una malla i textura diferent segons la opció escollida
 		if (changed) {
 			switch (mesh_selected){
 			case 0: mesh = Mesh::Get("data/meshes/sphere.obj.mbin"); 
@@ -78,6 +95,8 @@ void SceneNode::renderInMenu()
 				material->texture = Texture::Get("data/models/bench/albedo.png"); 
 				model.modifyScale(1.8, 1.8, 1.8); //Reescalem la malla perqu? tingui el tamany desitjat
 				break;
+			case 3:
+				mesh = Mesh::getCube();
 			}
 		}
 
@@ -88,6 +107,7 @@ void SceneNode::renderInMenu()
 Light::Light(std::string name)
 {
 	this->name = name;
+	visible = true;
 }
 
 void Light::renderInMenu()
@@ -95,6 +115,7 @@ void Light::renderInMenu()
 	ImGui::DragFloat3("Position", position.v, 0.1f);  //Slider per moure la posicio de la llum
 	ImGui::ColorEdit3("Difuse Color", difuse.v);      //Permet modificar la llum difusa
 	ImGui::ColorEdit3("Specular Color", specular.v);  //Permet modificar la llum especular
+	ImGui::Checkbox("Visible", &visible);
 	
 }
 
@@ -114,6 +135,7 @@ SkyboxNode::SkyboxNode()
 SkyboxNode::SkyboxNode(const char* name)
 {
 	this->name = name;
+	visible = true;
 }
 
 SkyboxNode::~SkyboxNode()
@@ -123,6 +145,7 @@ SkyboxNode::~SkyboxNode()
 
 void SkyboxNode::renderInMenu()
 {
+	ImGui::Checkbox("Visible", &visible);
 	// Definim tres opcions de fons
 	bool changed = false;
 	changed |= ImGui::Combo("Skybox", (int*)&skybox_selected, "CITY\0SNOW\0DRAGONVALE\0");

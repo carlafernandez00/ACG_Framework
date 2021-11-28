@@ -2,6 +2,10 @@
 #include "texture.h"
 #include "application.h"
 #include "extra/hdre.h"
+#include "volume.h"
+
+unsigned int volume_selected = 0;
+unsigned int tf_selected = 0;
 
 StandardMaterial::StandardMaterial()
 {
@@ -154,7 +158,7 @@ void PhongMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 				shader->setUniform("u_ia", Vector3(0,0,0));
 			}
 
-			Application::instance->light_list[i]->setUniforms(shader);
+			if (Application::instance->light_list[i]->visible) Application::instance->light_list[i]->setUniforms(shader);
 			
 			//do the draw call
 			mesh->render(GL_TRIANGLES);
@@ -374,11 +378,12 @@ VolumeMaterial::VolumeMaterial()
 	color = vec4(1.f, 1.f, 1.f, 1.f);
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/volume.fs");
 	step = 0.01;
-	brightness = 10.0;
+	brightness = 1.0;
+	threshold = 0.01;
 	use_jittering = false;
 	noise_texture = Texture::Get("data/blueNoise.png");
 	use_tf = false;
-	tf_text = Texture::Get("data/volumes/bonsai-4.png"); // TODO
+	tf_text = Texture::Get("data/volumes/torso-bones.png"); // TODO
 	use_clipping = false;
 	plane = Vector4(0.0, 0.0, 0.0, 0.0);
 }
@@ -399,15 +404,18 @@ void VolumeMaterial::setUniforms(Camera* camera, Matrix44 model)
 	Matrix44 inv_model = model;
 	inv_model.inverse();
 	shader->setUniform("u_iModel", inv_model);
-	shader->setUniform("u_vol_text", texture, 0);
+	if (texture) shader->setUniform("u_vol_text", texture, 0);
 	shader->setUniform("u_brightness", brightness);
+	shader->setUniform("u_threshold", threshold);
 
-	shader->setUniform("u_noise_text", noise_texture, 1);
+	if (noise_texture) {
+		shader->setUniform("u_noise_text", noise_texture, 1);
+		shader->setUniform("u_texture_width", noise_texture->width);
+	}
 	shader->setUniform("u_use_jittering", use_jittering);
-	shader->setUniform("u_texture_width", noise_texture->width);
 
 	shader->setUniform("u_use_tf", use_tf);
-	shader->setUniform("u_tf_text", tf_text, 2);
+	if (tf_text) shader->setUniform("u_tf_text", tf_text, 2);
 
 	shader->setUniform("u_use_clipping", use_clipping);
 	shader->setUniform("u_plane", plane);
@@ -440,23 +448,50 @@ void VolumeMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 
 void VolumeMaterial::renderInMenu()
 {
+	// Permet canviar el volum
+	bool changed = false;
+	changed |= ImGui::Combo("Volume", (int*)&volume_selected, "ABDOMEN\0BONSAI\0TEAPOT\0FOOT\0");
+	// Assignem una malla i textura diferent segons la opció escollida
+	if (changed) {
+		Volume * volume = new Volume();
+		switch (volume_selected) {
+		case 0: 
+			volume->loadPVM("data/volumes/CT-Abdomen.pvm");
+			this->texture->create3DFromVolume(volume, GL_CLAMP_TO_EDGE);
+			break;
+		case 1:
+			volume->loadPNG("data/volumes/bonsai_16_16.png", 16, 16);
+			this->texture->create3DFromVolume(volume, GL_CLAMP_TO_EDGE);
+			break;
+		case 2:
+			volume->loadPNG("data/volumes/teapot_16_16.png", 16, 16);
+			this->texture->create3DFromVolume(volume, GL_CLAMP_TO_EDGE);
+			break;
+		case 3:
+			volume->loadPNG("data/volumes/foot_16_16.png", 16, 16);
+			this->texture->create3DFromVolume(volume, GL_CLAMP_TO_EDGE);
+			break;
+		}
+	}
 	ImGui::ColorEdit3("Base Color", (float*)&color); // Edit 3 floats representing a color
 	ImGui::SliderFloat("Step", &step, 0.001, 0.1);
 	ImGui::SliderFloat("Brightness", &brightness, 1.0, 20.0);
+	ImGui::SliderFloat("Density Threshold", &threshold, 0.0, 1.0, "%.3f");
 	ImGui::Checkbox("Jittering", &use_jittering);
 	ImGui::Checkbox("Transfer Function", &use_tf);
 	if (use_tf) {
 		// Definim tres opcions de fons
 		bool changed = false;
-		/*changed |= ImGui::Combo("Transfer Function Texture", &tf_text, "BONES\0MUSCLES\0MUSCLES AND BONES\0");
+		changed |= ImGui::Combo("Transfer Function Texture", (int*)&tf_selected, "BONES\0MUSCLES\0MUSCLES AND BONES\0BONSAI\0");
 		// Assignem una textura diferent al skybox segons la opci? escollida
 		if (changed) {
-			switch (skybox_selected) {
-			case 0: material->texture->cubemapFromImages("data/environments/city"); break;
-			case 1: material->texture->cubemapFromImages("data/environments/snow"); break;
-			case 2: material->texture->cubemapFromImages("data/environments/dragonvale"); break;
+			switch (tf_selected) {
+			case 0: tf_text = Texture::Get("data/volumes/bones.png"); break;
+			case 1: tf_text = Texture::Get("data/volumes/torso.png"); break;
+			case 2: tf_text = Texture::Get("data/volumes/torso-bones.png"); break;
+			case 3: tf_text = Texture::Get("data/volumes/bonsai.png"); break;
 			}
-		}*/
+		}
 		
 	}
 	ImGui::Checkbox("Clipping", &use_clipping);
@@ -465,10 +500,15 @@ void VolumeMaterial::renderInMenu()
 
 IsoVolumeMaterial::IsoVolumeMaterial()
 {
+	VolumeMaterial::VolumeMaterial();
 	iso_val = 0.5;
 	h = 0.1;
 	color = vec4(1.f, 1.f, 1.f, 1.f);
 	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/phong_volume.fs");
+	k_alpha = 10.0;
+	k_ambient = Vector3(1.0, 1.0, 1.0);
+	k_difuse = Vector3(1.0, 1.0, 1.0);
+	k_specular = Vector3(1.0, 1.0, 1.0);
 }
 
 IsoVolumeMaterial::~IsoVolumeMaterial()
@@ -487,11 +527,11 @@ void IsoVolumeMaterial::setUniforms(Camera* camera, Matrix44 model)
 	Matrix44 inv_model = model;
 	inv_model.inverse();
 	shader->setUniform("u_iModel", inv_model);
-	shader->setUniform("u_vol_text", texture, 0);
+	if (texture) shader->setUniform("u_vol_text", texture, 0);
 	shader->setUniform("u_brightness", brightness);
 
 	shader->setUniform("u_use_tf", use_tf);
-	shader->setUniform("u_tf_text", tf_text, 2);
+	if (tf_text) shader->setUniform("u_tf_text", tf_text, 2);
 
 	shader->setUniform("u_iso_value", iso_val);
 	shader->setUniform("u_h", h);
@@ -545,10 +585,7 @@ void IsoVolumeMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 
 void IsoVolumeMaterial::renderInMenu()
 {
-	ImGui::ColorEdit3("Base Color", (float*)&color); // Edit 3 floats representing a color
-	ImGui::SliderFloat("Step", &step, 0.001, 0.1);
-	ImGui::SliderFloat("Brightness", &brightness, 1.0, 20.0);
-	ImGui::Checkbox("Transfer Function", &use_tf);
+	VolumeMaterial::renderInMenu();
 	ImGui::SliderFloat("Iso-value", &iso_val, 0.0, 1.0, "%.5f");
 	ImGui::SliderFloat("h", &h, 0.00001, 0.1, "%.5f");
 	// creem sliders per modificar les constants del material

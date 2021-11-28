@@ -10,6 +10,7 @@ uniform mat4 u_iModel;
 uniform float u_step;
 uniform float u_brightness;
 uniform vec4 u_color;
+uniform float u_threshold;
 // Jittering
 uniform sampler2D u_noise_text;
 uniform bool u_use_jittering;
@@ -66,7 +67,7 @@ void main(){
 		
 	}
 
-	if (color.a  <= 0.01) discard;
+	if (color.a  <= u_threshold) discard;
 
 	//7. Final color	
 	gl_FragColor = u_brightness * u_color * color;

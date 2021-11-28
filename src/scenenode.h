@@ -20,6 +20,7 @@ public:
 	Vector3 position;
 
 	std::string name;
+	bool visible;
 
 	virtual void renderInMenu();
 	void setUniforms(Shader* shader);
