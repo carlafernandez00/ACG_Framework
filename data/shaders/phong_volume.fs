@@ -116,6 +116,6 @@ void main(){
 	if (color.a  <= 0.01) discard;
 
 	//7. Final color	
-	gl_FragColor = u_brightness * u_color * color;
+	gl_FragColor = color;
 
 }

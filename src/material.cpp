@@ -509,7 +509,7 @@ IsoVolumeMaterial::IsoVolumeMaterial()
 	k_ambient = Vector3(1.0, 1.0, 1.0);
 	k_difuse = Vector3(1.0, 1.0, 1.0);
 	k_specular = Vector3(1.0, 1.0, 1.0);
-	show_normals = Flase;
+	show_normals = false;
 }
 
 IsoVolumeMaterial::~IsoVolumeMaterial()
@@ -570,10 +570,11 @@ void IsoVolumeMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 				shader->setUniform("u_ia", Vector3(0, 0, 0));
 			}
 
-			Application::instance->light_list[i]->setUniforms(shader);
-
-			//do the draw call
-			mesh->render(GL_TRIANGLES);
+			if (Application::instance->light_list[i]->visible) {
+				Application::instance->light_list[i]->setUniforms(shader);
+				//do the draw call
+				mesh->render(GL_TRIANGLES);
+			}
 		}
 
 		// Deshabilitem el blending
