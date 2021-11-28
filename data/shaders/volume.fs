@@ -37,7 +37,7 @@ void main(){
 	// Jittering
 	if (u_use_jittering){
 		float random_offset = texture(u_noise_text, gl_FragCoord.xy / u_texture_width).x;
-		sample_pos += random_offset * direction;
+		sample_pos += random_offset * direction.xyz;
 	}
 
 	// Ray loop

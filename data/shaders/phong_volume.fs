@@ -65,7 +65,7 @@ vec4 computePhong(vec3 normal){
 	
 	// total
 	vec3 ip = ambient + difuse + specular;
-	return vec4(ip * u_color * u_brightness, 1.0);
+	return vec4(ip, 1.0) * u_color * u_brightness;
 }
 
 void main(){
