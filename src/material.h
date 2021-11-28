@@ -148,6 +148,7 @@ public:
 	Vector3 k_difuse;
 	Vector3 k_specular;
 	float k_alpha;
+	bool show_normals;
 	IsoVolumeMaterial();
 	~IsoVolumeMaterial();
 	void setUniforms(Camera* camera, Matrix44 model);

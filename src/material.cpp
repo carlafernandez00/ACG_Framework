@@ -451,7 +451,7 @@ void VolumeMaterial::renderInMenu()
 	// Permet canviar el volum
 	bool changed = false;
 	changed |= ImGui::Combo("Volume", (int*)&volume_selected, "ABDOMEN\0BONSAI\0TEAPOT\0FOOT\0");
-	// Assignem una malla i textura diferent segons la opció escollida
+	// Assignem una malla i textura diferent segons la opciï¿½ escollida
 	if (changed) {
 		Volume * volume = new Volume();
 		switch (volume_selected) {
@@ -509,6 +509,7 @@ IsoVolumeMaterial::IsoVolumeMaterial()
 	k_ambient = Vector3(1.0, 1.0, 1.0);
 	k_difuse = Vector3(1.0, 1.0, 1.0);
 	k_specular = Vector3(1.0, 1.0, 1.0);
+	show_normals = Flase;
 }
 
 IsoVolumeMaterial::~IsoVolumeMaterial()
@@ -535,6 +536,8 @@ void IsoVolumeMaterial::setUniforms(Camera* camera, Matrix44 model)
 
 	shader->setUniform("u_iso_value", iso_val);
 	shader->setUniform("u_h", h);
+
+	shader->setUniform("u_show_normals", show_normals);
 
 	// material
 	shader->setUniform("u_ka", k_ambient);
@@ -593,4 +596,6 @@ void IsoVolumeMaterial::renderInMenu()
 	ImGui::DragFloat3("Kd", k_difuse.v, 0.1f, 0.0, 1.0);   //definim un rang
 	ImGui::DragFloat3("Ks", k_specular.v, 0.1f, 0.0, 1.0); //definim un rang
 	ImGui::SliderFloat("Alpha", &k_alpha, 0.1f, 500.0f);   //definim un rang
+	// creem una checkbox per veure les normals del volum 
+	ImGui::Checkbox("Show normals", &show_normals);
 }

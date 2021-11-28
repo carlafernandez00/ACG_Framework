@@ -11,6 +11,8 @@ uniform float u_step;
 uniform float u_brightness;
 uniform vec4 u_color;
 
+uniform bool u_show_normals;
+
 // Transfer Function
 uniform sampler2D u_tf_text;
 uniform bool u_use_tf;
@@ -96,7 +98,8 @@ void main(){
 			sample_color.rgb *= sample_color.a;
 			//color = sample_color;
 			// color = vec4(N, 1.0); // Normal color
-			color = computePhong(N);
+			if (u_show_normals) color = vec4(N, 1.0);
+			else color = computePhong(N);
 			break;
 		}
 
